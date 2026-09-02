@@ -225,11 +225,11 @@ function renderLog(){
 
 /* ---- bgm player ---- */
 const tracks = [
-  { title: '미드나잇롤러코스터', file: '미드나잇롤러코스터.mp3' },
-  { title: '버그리포트', file: '버그리포트.mp3' },
+  { title: 'Midnight Roller Coaster', file: '미드나잇롤러코스터.mp3' },
+  { title: 'Bug Report', file: '버그리포트.mp3' },
   { title: '궤도이탈', file: '궤도이탈.mp3' },
-  { title: '콜드캔디멜트', file: '콜드캔디멜트.mp3' },
-  { title: '언홀리얼라이언스', file: '언홀리얼라이언스.mp3' }
+  { title: 'Cold Candy Melt', file: '콜드캔디멜트.mp3' },
+  { title: 'Unholy Alliance', file: '언홀리얼라이언스.mp3' }
 ];
 let trackIndex = 0;
 let playing = false;
