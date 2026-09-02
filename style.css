@@ -293,6 +293,14 @@ body{
 
 /* chat window */
 .chat-thread{display:flex;flex-direction:column;gap:6px}
+.chat-bubble.chat-pop{animation:chatPop .25s ease-out}
+@keyframes chatPop{
+  from{opacity:0;transform:translateY(6px) scale(.92)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+@media (prefers-reduced-motion:reduce){
+  .chat-bubble.chat-pop{animation:none}
+}
 .chat-bubble{
   position:relative;
   max-width:75%;padding:8px 14px;border-radius:18px;

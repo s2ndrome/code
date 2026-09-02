@@ -26,9 +26,11 @@ window.addEventListener('resize', () => document.querySelectorAll('.win').forEac
 function openWin(id){
   const el = document.getElementById(id);
   if (!el) return;
+  const wasHidden = el.hidden;
   el.hidden = false;
   bringToFront(el);
   clampWindow(el);
+  if (id === 'chatWin' && wasHidden && typeof playChatThread === 'function') playChatThread();
   if (window.matchMedia('(max-width:920px)').matches) {
     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
@@ -294,3 +296,59 @@ setInterval(tickClock, 1000 * 15);
 if (window.matchMedia('(max-width:920px)').matches) {
   ['profileWin', 'galleryWin', 'chatWin'].forEach(closeWin);
 }
+
+/* ---- chat thread: reveal messages one by one ---- */
+const chatMessages = [
+  { who: 'them', text: '아' },
+  { who: 'them', text: '갑자기 생각났는데' },
+  { who: 'them', text: '너 그거 기억남?' },
+  { who: 'them', text: '우리 처음 만났을 때' },
+  { who: 'me', text: '망고마켓?' },
+  { who: 'them', text: 'ㅇㅇ' },
+  { who: 'them', text: '그때 너 ㅈㄴ 웃겼는데' },
+  { who: 'me', text: '내가 뭐가 웃겨' },
+  { who: 'me', text: '니가 더 웃겼거든?' },
+  { who: 'me', text: '돈 없다고 징징대고' },
+  { who: 'them', text: '아니 그건 팩트고' },
+  { who: 'them', text: '진짜 돈 없었음' },
+  { who: 'them', text: '월급 전이라' },
+  { who: 'them', text: '근데 너 그때 나 이상한 사람인 줄 알았지' },
+  { who: 'me', text: '솔직히 좀' },
+  { who: 'me', text: '의심했음' },
+  { who: 'them', text: 'ㅋ 그때 게이밍 의자 판 돈으로 뭐 했냐' },
+  { who: 'me', text: '기억 안 남' },
+  { who: 'me', text: '뭐 맛있는 거 사 먹었겠지' },
+  { who: 'them', text: '에휴' },
+  { who: 'them', text: '그 의자 지금도 잘 쓰고 있다' },
+  { who: 'them', text: '우리 집 보물 1호임' },
+  { who: 'them', text: '너는 보물 0호고' },
+  { who: 'me', text: '…' },
+  { who: 'me', text: '갑자기 그런 말을' },
+  { who: 'them', text: '왜' },
+  { who: 'them', text: '부끄러워?' },
+  { who: 'me', text: '아니거든' },
+  { who: 'them', text: '부끄러울 땐 말이 없어지는 편' },
+  { who: 'them', text: '메모' },
+  { who: 'me', text: 'ㅈㄹ' }
+];
+
+let chatPlayToken = 0;
+function playChatThread(){
+  const thread = document.getElementById('chatThread');
+  const body = document.querySelector('#chatWin .win-body');
+  const myToken = ++chatPlayToken;
+  thread.innerHTML = '';
+  let delay = 0;
+  chatMessages.forEach(msg => {
+    delay += 350 + Math.min(msg.text.length * 25, 500);
+    setTimeout(() => {
+      if (myToken !== chatPlayToken) return;
+      const div = document.createElement('div');
+      div.className = 'chat-bubble ' + msg.who + ' chat-pop';
+      div.textContent = msg.text;
+      thread.appendChild(div);
+      body.scrollTop = body.scrollHeight;
+    }, delay);
+  });
+}
+playChatThread();
