@@ -131,6 +131,14 @@ function openLogPost(item){
 
 document.getElementById('postBack').addEventListener('click', () => closeWin('postWin'));
 
+/* ---- pair ---- */
+document.querySelectorAll('.pair-card').forEach(card => {
+  const id = card.dataset.pairId;
+  const open = () => openPost('pair', 'PAIR', id);
+  card.addEventListener('click', open);
+  card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
+});
+
 /* ---- gallery ---- */
 function totalPages(cat){ return Math.max(1, Math.ceil(galleryList(cat).length / 6)); }
 

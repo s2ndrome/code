@@ -106,7 +106,7 @@ body{
   max-width:1180px;
   margin:26px auto 0;
   padding:0 24px 40px;
-  min-height:680px;
+  min-height:800px;
 }
 .win{
   position:absolute;
@@ -126,6 +126,7 @@ body{
   [data-win="menuWin"]{left:40px;top:235px;width:250px;height:200px;z-index:2}
   [data-win="galleryWin"]{left:300px;top:0;width:560px;height:600px;z-index:5}
   [data-win="logWin"]{left:850px;top:110px;width:280px;height:440px;z-index:4}
+  [data-win="pairWin"]{left:820px;top:520px;width:300px;height:220px;z-index:2}
   [data-win="postWin"]{left:330px;top:130px;width:420px;height:480px;z-index:6}
 }
 @media (max-width:920px){
@@ -288,6 +289,24 @@ body{
 .log-title{font-weight:700;font-size:.84rem;margin:0 0 4px}
 .log-excerpt{font-size:.76rem;color:var(--ink-soft);line-height:1.5;margin:0}
 .log-more{font-size:.7rem;color:var(--titlebar-a);margin-top:5px;display:inline-block}
+
+/* pair window */
+.pair-grid{display:flex;gap:12px}
+.pair-card{
+  flex:1;text-align:center;padding:14px 10px;
+  border:1px solid var(--line-dark);border-radius:8px;
+  cursor:pointer;
+}
+.pair-card:hover{background:var(--panel-soft)}
+.pair-avatar{
+  width:52px;height:52px;border-radius:50%;margin:0 auto 8px;
+  background:linear-gradient(160deg,#FFFFFF,#D9D2FF);
+  border:1px solid var(--line-dark);
+}
+.pair-name{font-weight:700;font-size:.84rem;min-height:1.2em}
+.pair-name:empty::before{content:'이름';color:var(--ink-faint);font-weight:400;font-style:italic}
+.pair-tagline{font-size:.7rem;color:var(--ink-faint);margin-top:2px;min-height:1.2em}
+.pair-tagline:empty::before{content:'한 줄 소개';font-style:italic}
 
 /* post (detail) window */
 .post-back{

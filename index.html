@@ -27,6 +27,7 @@
   <button class="dicon" data-open-target="profileWin"><span class="dicon-glyph">🖥️</span><span class="dicon-label">Profile</span></button>
   <button class="dicon" data-open-target="galleryWin"><span class="dicon-glyph">🖼️</span><span class="dicon-label">Gallery</span></button>
   <button class="dicon" data-open-target="logWin"><span class="dicon-glyph">📓</span><span class="dicon-label">Log</span></button>
+  <button class="dicon" data-open-target="pairWin"><span class="dicon-glyph">🖇️</span><span class="dicon-label">Pair</span></button>
   <button class="dicon" data-open-target="bgmWidget"><span class="dicon-glyph">🎧</span><span class="dicon-label">BGM</span></button>
 </div>
 
@@ -97,6 +98,27 @@
     </div>
   </section>
 
+  <section class="win" id="pairWin" data-win="pairWin">
+    <div class="win-title">
+      <span class="win-title-label"><span class="win-title-icon" style="background:#9B8CFF"></span>pair.info</span>
+      <span class="win-btns"><span>_</span><span>□</span><span class="win-close" data-target="pairWin" role="button" tabindex="0" aria-label="Pair 닫기">×</span></span>
+    </div>
+    <div class="win-body">
+      <div class="pair-grid">
+        <div class="pair-card" data-pair-id="character-1" role="button" tabindex="0">
+          <div class="pair-avatar"></div>
+          <div class="pair-name"></div>
+          <div class="pair-tagline"></div>
+        </div>
+        <div class="pair-card" data-pair-id="character-2" role="button" tabindex="0">
+          <div class="pair-avatar"></div>
+          <div class="pair-name"></div>
+          <div class="pair-tagline"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="win" id="postWin" data-win="postWin" hidden>
     <div class="win-title">
       <span class="win-title-label"><span class="win-title-icon" style="background:#7ED2F5"></span>post.html</span>
@@ -140,6 +162,7 @@
     <span class="tb-icon pixel" data-open-target="menuWin" role="button" tabindex="0">Menu</span>
     <span class="tb-icon pixel" data-open-target="galleryWin" role="button" tabindex="0">Gallery</span>
     <span class="tb-icon pixel" data-open-target="logWin" role="button" tabindex="0">Log</span>
+    <span class="tb-icon pixel" data-open-target="pairWin" role="button" tabindex="0">Pair</span>
     <span class="tb-icon pixel" data-open-target="bgmWidget" role="button" tabindex="0">BGM</span>
   </div>
   <span class="tb-clock pixel" id="clock">--:--</span>
