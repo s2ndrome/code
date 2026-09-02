@@ -443,7 +443,7 @@ body{
 .bgm-playlist li.active{color:var(--titlebar-a);font-weight:700}
 
 @media (max-width:920px){
-  .bgm{left:12px;right:12px;bottom:58px;width:auto}
+  .bgm{left:auto;right:12px;bottom:58px;width:220px}
   .bgm .win-body{padding:6px 10px}
   .bgm-controls{margin-top:5px}
 }

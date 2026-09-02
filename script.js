@@ -289,3 +289,8 @@ function tickClock(){
 }
 tickClock();
 setInterval(tickClock, 1000 * 15);
+
+/* ---- mobile: start with only Menu + BGM visible ---- */
+if (window.matchMedia('(max-width:920px)').matches) {
+  ['profileWin', 'galleryWin', 'chatWin'].forEach(closeWin);
+}
