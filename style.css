@@ -21,6 +21,12 @@
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 [hidden]{display:none!important}
+img, .profile-avatar, .pair-avatar {
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  -webkit-user-drag: none !important;
+}
 body{
   background:#FFFFFF;
   color:var(--ink);
@@ -179,7 +185,9 @@ body{
 .avatar-wrap{position:relative;width:72px;margin:-36px auto 0}
 .profile-avatar{
   width:72px;height:72px;border-radius:50%;
-  background:linear-gradient(160deg,#FFFFFF,#8FDDFF);
+  background-color:#8FDDFF;
+  background-size:cover;
+  background-position:center;
   border:3px solid var(--panel);
   box-shadow:0 0 0 2px var(--line-dark);
   display:flex;align-items:center;justify-content:center;
