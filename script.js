@@ -111,6 +111,74 @@ function galleryList(cat){ return cat === 1 ? gallery1 : gallery2; }
 const postMeta = document.getElementById('postMeta');
 const postContent = document.getElementById('postContent');
 
+/* locked posts: posts/<cat>/<id>.html can contain
+   <div class="locked-post" data-salt="…" data-iv="…" data-cipher="…"></div>
+   instead of real HTML. Content is AES-256-GCM encrypted with a
+   PBKDF2(password, salt, 100000, SHA-256) key, decrypted client-side —
+   the plaintext never appears anywhere in the repo. */
+function parseLockedPost(html){
+  const match = html.match(/<div class="locked-post" data-salt="([^"]+)" data-iv="([^"]+)" data-cipher="([^"]+)">/);
+  if (!match) return null;
+  return { salt: match[1], iv: match[2], cipher: match[3] };
+}
+function base64ToBytes(b64){
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes;
+}
+async function decryptLockedPost(locked, password){
+  const baseKey = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey']);
+  const key = await crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt: base64ToBytes(locked.salt), iterations: 100000, hash: 'SHA-256' },
+    baseKey,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['decrypt']
+  );
+  const plainBuf = await crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv: base64ToBytes(locked.iv) },
+    key,
+    base64ToBytes(locked.cipher)
+  );
+  return new TextDecoder().decode(plainBuf);
+}
+function renderLockGate(){
+  return '<div class="lock-gate">' +
+    '<iconify-icon class="lock-gate-icon" icon="solar:lock-keyhole-minimalistic-bold-duotone"></iconify-icon>' +
+    '<p class="lock-gate-hint">비밀번호가 필요한 글이에요</p>' +
+    '<div class="lock-gate-row">' +
+      '<input type="password" class="lock-gate-input" placeholder="비밀번호" autocomplete="off">' +
+      '<button type="button" class="lock-gate-submit">확인</button>' +
+    '</div>' +
+    '<p class="lock-gate-error" hidden>비밀번호가 틀렸어요</p>' +
+  '</div>';
+}
+function wireLockGate(locked){
+  const input = postContent.querySelector('.lock-gate-input');
+  const submit = postContent.querySelector('.lock-gate-submit');
+  const error = postContent.querySelector('.lock-gate-error');
+
+  const tryUnlock = async () => {
+    const password = input.value;
+    if (!password || submit.disabled) return;
+    submit.disabled = true;
+    error.hidden = true;
+    try {
+      postContent.innerHTML = await decryptLockedPost(locked, password);
+    } catch (e) {
+      error.hidden = false;
+      input.value = '';
+      input.focus();
+      submit.disabled = false;
+    }
+  };
+
+  submit.addEventListener('click', tryUnlock);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') tryUnlock(); });
+  input.focus();
+}
+
 async function openPost(catPath, meta, title){
   postMeta.textContent = meta;
   postContent.innerHTML = '불러오는 중…';
@@ -118,7 +186,14 @@ async function openPost(catPath, meta, title){
   try {
     const res = await fetch('posts/' + catPath + '/' + encodeURIComponent(title) + '.html');
     if (!res.ok) throw new Error();
-    postContent.innerHTML = await res.text();
+    const html = await res.text();
+    const locked = parseLockedPost(html);
+    if (locked) {
+      postContent.innerHTML = renderLockGate();
+      wireLockGate(locked);
+    } else {
+      postContent.innerHTML = html;
+    }
   } catch (e) {
     postContent.innerHTML = '<p>본문을 불러오지 못했어요. (서버 없이 파일을 직접 열면 본문을 못 가져와요 — GitHub Pages 등으로 호스팅해서 확인해주세요.)</p>';
   }
@@ -199,9 +274,10 @@ function renderLog(){
     li.className = 'log-item';
     li.setAttribute('role', 'button');
     li.tabIndex = 0;
+    const lockIcon = item.locked ? '<iconify-icon class="log-lock" icon="solar:lock-keyhole-minimalistic-bold-duotone"></iconify-icon>' : '';
     li.innerHTML =
       '<span class="log-date">' + item.date + '</span>' +
-      '<p class="log-title">' + item.title + '</p>' +
+      '<p class="log-title">' + lockIcon + item.title + '</p>' +
       '<p class="log-excerpt">' + item.excerpt + '</p>' +
       '<a class="log-more">더보기 ›</a>';
     li.addEventListener('click', () => openLogPost(item));

@@ -50,6 +50,10 @@
   input[type="file"] { font-size: 13px; }
   textarea { min-height: 140px; }
   .field-group[hidden] { display: none; }
+  .checkbox-row { display: flex; align-items: center; gap: 8px; margin-top: 18px; }
+  .checkbox-row input { width: auto; }
+  .checkbox-row label { margin: 0; font-size: 13px; font-weight: 400; }
+  #log-password-row[hidden] { display: none; }
   button {
     margin-top: 22px;
     padding: 10px 20px;
@@ -120,6 +124,15 @@
 
     <label for="log-content">내용 (본문에 그대로 들어가요, HTML도 가능)</label>
     <textarea id="log-content" placeholder="&lt;p&gt;여기에 본문 내용을 적어주세요&lt;/p&gt;"></textarea>
+
+    <div class="checkbox-row">
+      <input type="checkbox" id="log-lock-check">
+      <label for="log-lock-check">비밀번호로 잠그기</label>
+    </div>
+    <div id="log-password-row" hidden>
+      <label for="log-lock-password">비밀번호</label>
+      <input type="text" id="log-lock-password" placeholder="이 글을 열 때 쓸 비밀번호">
+    </div>
   </div>
 
   <button id="upload-btn">업로드</button>
@@ -143,6 +156,9 @@ const logTitleInput = document.getElementById("log-title");
 const logDateInput = document.getElementById("log-date");
 const logExcerptInput = document.getElementById("log-excerpt");
 const logContentInput = document.getElementById("log-content");
+const logLockCheck = document.getElementById("log-lock-check");
+const logPasswordRow = document.getElementById("log-password-row");
+const logLockPasswordInput = document.getElementById("log-lock-password");
 const uploadBtn = document.getElementById("upload-btn");
 const status = document.getElementById("status");
 
@@ -165,6 +181,10 @@ function syncFields(){
 categorySelect.addEventListener("change", syncFields);
 syncFields();
 
+logLockCheck.addEventListener("change", () => {
+  logPasswordRow.hidden = !logLockCheck.checked;
+});
+
 function setStatus(text, kind) {
   status.textContent = text;
   status.className = "status" + (kind ? " " + kind : "");
@@ -186,6 +206,30 @@ function base64ToUtf8(b64) {
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
   return new TextDecoder().decode(bytes);
+}
+
+function bytesToBase64(bytes) {
+  let binary = "";
+  bytes.forEach(b => binary += String.fromCharCode(b));
+  return btoa(binary);
+}
+
+async function encryptPost(password, plaintext) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const baseKey = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveKey"]);
+  const key = await crypto.subtle.deriveKey(
+    { name: "PBKDF2", salt, iterations: 100000, hash: "SHA-256" },
+    baseKey,
+    { name: "AES-GCM", length: 256 },
+    false,
+    ["encrypt"]
+  );
+  const cipherBuf = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, new TextEncoder().encode(plaintext));
+  const saltB64 = bytesToBase64(salt);
+  const ivB64 = bytesToBase64(iv);
+  const cipherB64 = bytesToBase64(new Uint8Array(cipherBuf));
+  return `<div class="locked-post" data-salt="${saltB64}" data-iv="${ivB64}" data-cipher="${cipherB64}"></div>`;
 }
 
 function readFileAsBase64(file) {
@@ -271,7 +315,10 @@ async function uploadLog(token) {
   const content = logContentInput.value;
   const dateRaw = logDateInput.value || todayStr();
   const date = dateRaw.replace(/-/g, ".");
+  const locked = logLockCheck.checked;
+  const password = logLockPasswordInput.value;
   if (!title || !excerpt || !content) throw new Error("제목, 요약, 내용을 모두 입력해주세요.");
+  if (locked && !password) throw new Error("잠그려면 비밀번호도 입력해주세요.");
 
   setStatus("data/log.json 불러오는 중…");
   const jsonFile = await getFile("data/log.json");
@@ -281,19 +328,26 @@ async function uploadLog(token) {
     throw new Error(`이미 "${title}"라는 제목의 글이 있어요. 다른 제목을 써주세요.`);
   }
 
+  const entry = { id: title, date, title, excerpt };
+  if (locked) entry.locked = true;
+
   setStatus("data/log.json 업데이트 중…");
-  list.unshift({ id: title, date, title, excerpt });
+  list.unshift(entry);
   const newJsonText = JSON.stringify(list, null, 2) + "\n";
   await putFile("data/log.json", utf8ToBase64(newJsonText), `Add "${title}" to log.json`, jsonFile.sha);
 
   setStatus("본문 글 생성 중…");
-  await putFile(`posts/log/${title}.html`, utf8ToBase64(content), `Add log post: ${title}`);
+  const postBody = locked ? await encryptPost(password, content) : content;
+  await putFile(`posts/log/${title}.html`, utf8ToBase64(postBody), `Add log post: ${title}`);
 
   setStatus(`완료! "${title}" 글이 등록됐어요.`, "done");
   logTitleInput.value = "";
   logExcerptInput.value = "";
   logContentInput.value = "";
   logDateInput.value = todayStr();
+  logLockCheck.checked = false;
+  logLockPasswordInput.value = "";
+  logPasswordRow.hidden = true;
 }
 
 uploadBtn.addEventListener("click", async () => {

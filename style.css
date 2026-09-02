@@ -288,6 +288,7 @@ body{
   clip-path:polygon(6% 0%,100% 0%,94% 50%,100% 100%,6% 100%,0% 50%);
 }
 .log-title{font-weight:700;font-size:.84rem;margin:0 0 4px}
+.log-lock{width:13px;height:13px;position:relative;top:2px;margin-right:3px;color:var(--titlebar-a)}
 .log-excerpt{font-size:.76rem;color:var(--ink-soft);line-height:1.5;margin:0}
 .log-more{font-size:.7rem;color:var(--titlebar-a);margin-top:5px;display:inline-block}
 
@@ -356,6 +357,26 @@ body{
 .pair-name:empty::before{content:'이름';color:var(--ink-faint);font-weight:400;font-style:italic}
 .pair-tagline{font-size:.7rem;color:var(--ink-faint);margin-top:2px;min-height:1.2em}
 .pair-tagline:empty::before{content:'한 줄 소개';font-style:italic}
+
+/* lock gate (password-protected posts) */
+.lock-gate{text-align:center;padding:22px 8px}
+.lock-gate-icon{width:32px;height:32px;color:var(--titlebar-a);margin-bottom:8px}
+.lock-gate-hint{font-size:.78rem;color:var(--ink-soft);margin:0 0 12px}
+.lock-gate-row{display:flex;gap:6px;justify-content:center}
+.lock-gate-input{
+  width:150px;padding:7px 10px;
+  border:1px solid var(--line-dark);border-radius:6px;
+  font:inherit;font-size:.8rem;color:var(--ink);
+  background:var(--panel-soft);
+}
+.lock-gate-submit{
+  font-family:'Galmuri11';font-size:.72rem;
+  background:var(--titlebar-a);color:#fff;
+  border:1px solid var(--chrome-dark);border-radius:6px;
+  padding:7px 14px;cursor:pointer;
+}
+.lock-gate-submit:disabled{opacity:.6;cursor:default}
+.lock-gate-error{color:#B3261E;font-size:.72rem;margin:10px 0 0}
 
 /* post (detail) window */
 .post-back{
