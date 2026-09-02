@@ -239,9 +239,10 @@ img.dicon-glyph{width:32px;height:32px;object-fit:contain}
   background:var(--titlebar-a);color:#fff;border-color:var(--chrome-dark);
 }
 .gallery-grid{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:10px;
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;
 }
 .thumb{
+  min-width:0;
   aspect-ratio:1/1;
   background:#fff;
   border:1px solid var(--line-dark);
@@ -273,7 +274,7 @@ img.dicon-glyph{width:32px;height:32px;object-fit:contain}
   border:1px dashed var(--line-dark);
   border-radius:6px;
 }
-.pager{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:14px}
+.pager{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:20px}
 .pager button{
   font-family:'Galmuri11';font-size:.72rem;
   background:var(--panel-soft);color:var(--ink);
@@ -432,7 +433,7 @@ img.dicon-glyph{width:32px;height:32px;object-fit:contain}
 }
 
 @media (max-width:560px){
-  .gallery-grid{grid-template-columns:repeat(2,1fr)}
+  .gallery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media (max-width:920px){
   .win-body{flex:none}
