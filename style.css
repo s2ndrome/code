@@ -318,7 +318,7 @@ body{
   padding:7px 14px;display:flex;align-items:center;gap:6px;cursor:pointer;
 }
 .tb-sep{width:1px;height:26px;background:rgba(255,255,255,.35);flex:none}
-.tb-icons{display:flex;gap:8px;flex:1;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
+.tb-icons{display:flex;gap:8px;flex:1;min-width:0;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
 .tb-icons::-webkit-scrollbar{display:none}
 .tb-icon{
   font-family:'Galmuri11';font-size:.7rem;color:#fff;
@@ -337,9 +337,7 @@ body{
   .gallery-grid{grid-template-columns:repeat(2,1fr)}
 }
 @media (max-width:920px){
-  .bgm{left:12px;right:12px;bottom:58px;width:auto}
-  .bgm .win-body{padding:6px 10px}
-  .bgm-controls{margin-top:5px}
+  .win-body{flex:none}
 }
 
 /* bgm mini player */
@@ -371,3 +369,9 @@ body{
   font-size:.7rem;cursor:pointer;
 }
 .bgm-controls button:active{box-shadow:inset 1px 1px 0 var(--line-dark)}
+
+@media (max-width:920px){
+  .bgm{left:12px;right:12px;bottom:58px;width:auto}
+  .bgm .win-body{padding:6px 10px}
+  .bgm-controls{margin-top:5px}
+}
