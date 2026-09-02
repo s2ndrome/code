@@ -208,6 +208,7 @@ body{
 .menu-list .m-icon{
   width:20px;height:20px;flex:none;
   color:var(--titlebar-a);
+  position:relative;top:3px;
 }
 .menu-list .m-arrow{color:var(--ink-faint)}
 .menu-list li a{display:contents;color:inherit;text-decoration:none}
