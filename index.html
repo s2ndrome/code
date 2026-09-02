@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CODE Desktop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Galmuri11&family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<span class="sparkle s1" aria-hidden="true"></span>
+<span class="sparkle s2" aria-hidden="true"></span>
+<span class="sparkle s3" aria-hidden="true"></span>
+<span class="sparkle s4" aria-hidden="true"></span>
+
+<div class="browser-bar">
+  <div class="browser-chrome">
+    <span class="browser-dots"><span></span><span></span><span></span></span>
+    <span class="browser-url">http://code.home/main.html</span>
+    <span class="browser-fav">★ 즐겨찾기</span>
+  </div>
+</div>
+
+<div class="desktop-icons">
+  <button class="dicon" data-open-target="profileWin"><span class="dicon-glyph">🖥️</span><span class="dicon-label">Profile</span></button>
+  <button class="dicon" data-open-target="galleryWin"><span class="dicon-glyph">🖼️</span><span class="dicon-label">Gallery</span></button>
+  <button class="dicon" data-open-target="logWin"><span class="dicon-glyph">📓</span><span class="dicon-label">Log</span></button>
+  <button class="dicon" data-open-target="bgmWidget"><span class="dicon-glyph">🎧</span><span class="dicon-label">BGM</span></button>
+</div>
+
+<div class="desktop">
+
+  <section class="win" id="profileWin" data-win="profileWin">
+    <div class="win-title">
+      <span class="win-title-label"><span class="win-title-icon" style="background:#4FB6EF"></span>profile.exe</span>
+      <span class="win-btns"><span>_</span><span>□</span><span class="win-close" data-target="profileWin" role="button" tabindex="0" aria-label="프로필 닫기">×</span></span>
+    </div>
+    <div class="win-body">
+      <div class="profile-banner"></div>
+      <div class="avatar-wrap">
+        <div class="profile-avatar">C</div>
+        <span class="avatar-sticker" aria-hidden="true"></span>
+      </div>
+      <div class="profile-title">
+        <div class="profile-nick">코드 (CODE)</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="win" id="menuWin" data-win="menuWin">
+    <div class="win-title">
+      <span class="win-title-label"><span class="win-title-icon" style="background:#9FE3FF"></span>menu.exe</span>
+      <span class="win-btns"><span>_</span><span>□</span><span class="win-close" data-target="menuWin" role="button" tabindex="0" aria-label="메뉴 닫기">×</span></span>
+    </div>
+    <div class="win-body">
+      <ul class="menu-list">
+        <li data-open-target="galleryWin" role="button" tabindex="0"><span class="m-label"><span class="m-icon">▦</span>Category</span><span class="m-arrow">›</span></li>
+        <li><span class="m-label"><span class="m-icon">☰</span>Menu</span><span class="m-arrow">›</span></li>
+        <li><span class="m-label"><span class="m-icon">🔗</span>Link</span><span class="m-arrow">›</span></li>
+        <li><span class="m-label"><span class="m-icon">🔍</span>Search</span><span class="m-arrow">›</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="win gallery-win" id="galleryWin" data-win="galleryWin">
+    <div class="win-title">
+      <span class="win-title-label"><span class="win-title-icon" style="background:#2E86C1"></span>gallery.gal</span>
+      <span class="win-btns"><span>_</span><span>□</span><span class="win-close" data-target="galleryWin" role="button" tabindex="0" aria-label="갤러리 닫기">×</span></span>
+    </div>
+    <div class="win-body">
+      <div class="gallery-head">
+        <h3 id="galTitle">Gallery 1</h3>
+        <span class="gallery-count" id="galCount">14 posts</span>
+      </div>
+      <div class="tabs">
+        <button class="tab active" data-cat="1">Gallery 1</button>
+        <button class="tab" data-cat="2">Gallery 2</button>
+      </div>
+      <div class="gallery-grid" id="galGrid"></div>
+      <div class="pager">
+        <button id="galPrev">‹ PREV</button>
+        <span class="pager-num" id="galPage">1 / 3</span>
+        <button id="galNext">NEXT ›</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="win" id="logWin" data-win="logWin">
+    <div class="win-title">
+      <span class="win-title-label"><span class="win-title-icon" style="background:#146485"></span>log.txt</span>
+      <span class="win-btns"><span>_</span><span>□</span><span class="win-close" data-target="logWin" role="button" tabindex="0" aria-label="로그 닫기">×</span></span>
+    </div>
+    <div class="win-body">
+      <ul class="log-list" id="logList"></ul>
+    </div>
+  </section>
+
+  <section class="win" id="postWin" data-win="postWin" hidden>
+    <div class="win-title">
+      <span class="win-title-label"><span class="win-title-icon" style="background:#7ED2F5"></span>post.html</span>
+      <span class="win-btns"><span>_</span><span>□</span><span class="win-close" data-target="postWin" role="button" tabindex="0" aria-label="본문 닫기">×</span></span>
+    </div>
+    <div class="win-body">
+      <button class="post-back" id="postBack">‹ 목록으로</button>
+      <div class="post-media" id="postMedia"></div>
+      <div class="post-meta" id="postMeta"></div>
+      <h3 class="post-title" id="postTitle"></h3>
+      <p class="post-body" id="postBodyText"></p>
+    </div>
+  </section>
+
+</div>
+
+<section class="win bgm" id="bgmWidget">
+  <div class="win-title">
+    <span class="win-title-label"><span class="win-title-icon" style="background:#63C4EE"></span>bgm.mp3</span>
+    <span class="win-btns"><span class="win-close" data-target="bgmWidget" role="button" tabindex="0" aria-label="브금 닫기">×</span></span>
+  </div>
+  <div class="win-body">
+    <div class="bgm-row">
+      <div class="eq" id="bgmEq"><span></span><span></span><span></span><span></span></div>
+      <div class="bgm-meta">
+        <div class="bgm-track" id="bgmTrack">벚꽃 엔딩 (inst.)</div>
+        <div class="bgm-sub">track 1 / 3</div>
+      </div>
+    </div>
+    <div class="bgm-controls">
+      <button id="bgmPrev" aria-label="이전 곡">◀◀</button>
+      <button id="bgmPlay" aria-label="재생/일시정지">❚❚</button>
+      <button id="bgmNext" aria-label="다음 곡">▶▶</button>
+    </div>
+  </div>
+</section>
+
+<nav class="taskbar" aria-label="작업 표시줄">
+  <button class="tb-start pixel">⊞ CODE MENU</button>
+  <span class="tb-sep"></span>
+  <div class="tb-icons">
+    <span class="tb-icon pixel" data-open-target="profileWin" role="button" tabindex="0">👤 Profile</span>
+    <span class="tb-icon pixel" data-open-target="menuWin" role="button" tabindex="0">📁 Menu</span>
+    <span class="tb-icon pixel" data-open-target="galleryWin" role="button" tabindex="0">🖼 Gallery</span>
+    <span class="tb-icon pixel" data-open-target="logWin" role="button" tabindex="0">📝 Log</span>
+    <span class="tb-icon pixel" data-open-target="bgmWidget" role="button" tabindex="0">♫ BGM</span>
+  </div>
+  <span class="tb-clock pixel" id="clock">--:--</span>
+</nav>
+
+<script src="script.js"></script>
+</body>
+</html>
