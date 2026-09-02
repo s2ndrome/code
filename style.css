@@ -122,10 +122,10 @@ body{
   box-shadow:inset 0 0 0 1px var(--line-light), 0 14px 26px -16px rgba(32,57,74,.4);
 }
 @media (min-width:921px){
-  [data-win="profileWin"]{left:24px;top:0;width:280px;height:216px;z-index:3}
-  [data-win="menuWin"]{left:54px;top:196px;width:250px;height:200px;z-index:2}
-  [data-win="galleryWin"]{left:250px;top:60px;width:560px;height:600px;z-index:5}
-  [data-win="logWin"]{left:790px;top:104px;width:300px;height:440px;z-index:4}
+  [data-win="profileWin"]{left:24px;top:24px;width:280px;height:216px;z-index:3}
+  [data-win="menuWin"]{left:110px;top:235px;width:250px;height:200px;z-index:2}
+  [data-win="galleryWin"]{left:300px;top:0;width:560px;height:600px;z-index:5}
+  [data-win="logWin"]{left:850px;top:110px;width:280px;height:440px;z-index:4}
   [data-win="postWin"]{left:330px;top:130px;width:420px;height:480px;z-index:6}
 }
 @media (max-width:920px){
@@ -242,18 +242,26 @@ body{
   width:100%;height:100%;border-radius:3px;
   display:flex;align-items:flex-end;
   position:relative;overflow:hidden;
+  background:var(--panel-soft);
+}
+.thumb-photo img{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
 }
 .thumb-photo span{
+  position:relative;
   font-family:'Galmuri11';font-size:.6rem;color:#fff;
   background:rgba(20,100,133,.55);
   padding:3px 6px;width:100%;
 }
-.thumb.empty{border-style:dashed}
-.thumb.empty .thumb-photo{
-  background:var(--panel-soft);
-  align-items:center;justify-content:center;
+.gallery-empty{
+  grid-column:1/-1;
+  text-align:center;
+  padding:30px 10px;
+  color:var(--ink-faint);
+  font-size:.78rem;
+  border:1px dashed var(--line-dark);
+  border-radius:6px;
 }
-.thumb.empty .thumb-photo span{background:none;color:var(--ink-faint);text-align:center;width:auto;font-size:.66rem;letter-spacing:.04em}
 .pager{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:14px}
 .pager button{
   font-family:'Galmuri11';font-size:.72rem;
@@ -287,16 +295,11 @@ body{
   font-family:'Galmuri11';font-size:.7rem;color:var(--ink);
   padding:5px 12px;cursor:pointer;margin-bottom:12px;
 }
-.post-media{
-  width:100%;aspect-ratio:16/9;border-radius:6px;
-  border:1px solid var(--line-dark);
-  display:flex;align-items:center;justify-content:center;
-  color:#fff;font-family:'Galmuri11';font-size:.8rem;
-  margin-bottom:12px;
-}
-.post-meta{font-family:'Galmuri11';font-size:.66rem;color:var(--ink-faint);margin-bottom:4px}
-.post-title{margin:0 0 10px;font-size:1rem}
-.post-body{font-size:.86rem;line-height:1.7;color:var(--ink-soft);margin:0}
+.post-meta{font-family:'Galmuri11';font-size:.66rem;color:var(--ink-faint);margin-bottom:8px}
+.post-content{font-size:.86rem;line-height:1.7;color:var(--ink-soft)}
+.post-content img{max-width:100%;display:block;border-radius:6px;border:1px solid var(--line-dark);margin-bottom:12px}
+.post-content p{margin:0 0 10px}
+.post-content p:last-child{margin-bottom:0}
 
 /* taskbar */
 .taskbar{
@@ -314,13 +317,14 @@ body{
   box-shadow:inset -1px -1px 0 var(--chrome-dark), inset 1px 1px 0 #D8F5FF;
   padding:7px 14px;display:flex;align-items:center;gap:6px;cursor:pointer;
 }
-.tb-sep{width:1px;height:26px;background:rgba(255,255,255,.35)}
-.tb-icons{display:flex;gap:8px;flex:1;overflow:hidden}
+.tb-sep{width:1px;height:26px;background:rgba(255,255,255,.35);flex:none}
+.tb-icons{display:flex;gap:8px;flex:1;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
+.tb-icons::-webkit-scrollbar{display:none}
 .tb-icon{
   font-family:'Galmuri11';font-size:.7rem;color:#fff;
   background:rgba(255,255,255,.16);
   border:1px solid rgba(255,255,255,.4);border-radius:6px;
-  padding:6px 10px;white-space:nowrap;cursor:pointer;
+  padding:6px 10px;white-space:nowrap;cursor:pointer;flex:none;
 }
 .tb-icon:hover{background:rgba(255,255,255,.28)}
 .tb-clock{
@@ -330,8 +334,12 @@ body{
 }
 
 @media (max-width:560px){
-  .tb-icons .tb-icon:nth-child(3){display:none}
   .gallery-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:920px){
+  .bgm{left:12px;right:12px;bottom:58px;width:auto}
+  .bgm .win-body{padding:6px 10px}
+  .bgm-controls{margin-top:5px}
 }
 
 /* bgm mini player */

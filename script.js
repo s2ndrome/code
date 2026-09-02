@@ -1,11 +1,34 @@
 /* ---- window manager: bring-to-front / close / reopen / drag ---- */
 let zTop = 10;
 function bringToFront(el){ zTop += 1; el.style.zIndex = zTop; }
+
+/* keep windows from being resized/dragged under the fixed taskbar */
+const TASKBAR_CLEARANCE = 54;
+function clampWindow(win){
+  if (win.classList.contains('bgm')) return;
+  if (getComputedStyle(win).position !== 'absolute') return;
+  const limit = window.innerHeight - TASKBAR_CLEARANCE;
+  const rect = win.getBoundingClientRect();
+  if (rect.bottom <= limit) return;
+  const overflow = rect.bottom - limit;
+  if (rect.top - overflow >= 0) {
+    win.style.top = (parseFloat(win.style.top || rect.top) - overflow) + 'px';
+  } else {
+    const newHeight = Math.max(150, rect.height - overflow);
+    win.style.height = newHeight + 'px';
+  }
+}
+document.querySelectorAll('.win').forEach(win => {
+  new ResizeObserver(() => clampWindow(win)).observe(win);
+});
+window.addEventListener('resize', () => document.querySelectorAll('.win').forEach(clampWindow));
+
 function openWin(id){
   const el = document.getElementById(id);
   if (!el) return;
   el.hidden = false;
   bringToFront(el);
+  clampWindow(el);
   if (window.matchMedia('(max-width:920px)').matches) {
     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
@@ -60,111 +83,82 @@ function makeDraggable(win){
     win.style.left = newLeft + 'px';
     win.style.top = newTop + 'px';
   });
-  const endDrag = () => { dragging = false; };
+  const endDrag = () => { dragging = false; clampWindow(win); };
   titlebar.addEventListener('pointerup', endDrag);
   titlebar.addEventListener('pointercancel', endDrag);
 }
 document.querySelectorAll('.win').forEach(makeDraggable);
+document.querySelectorAll('.win:not([hidden])').forEach(clampWindow);
 
-/* ---- content data ---- */
-const galleryData = {
-  1: {
-    total: 14,
-    items: [
-      { id: 'p1', label: '풍경.jpg', grad: 'linear-gradient(135deg,#DCEFFF,#4FB6EF)', caption: '동네 뒷산에서 찍은 노을 지기 전 풍경. 필터 하나도 안 넣었는데 색이 예쁘게 나왔다.' },
-      { id: 'p2', label: '산책길', grad: 'linear-gradient(135deg,#EAF6FE,#63C4EE)', caption: '매일 걷는 산책 코스. 이 다리 지날 때마다 사진 한 장씩 남기는 중.' },
-      { id: 'p3', empty: true },
-      { id: 'p4', label: '노을', grad: 'linear-gradient(135deg,#CDEEFF,#2E86C1)', caption: '퇴근길에 하늘이 너무 예뻐서 급하게 세워두고 찍음.' },
-      { id: 'p5', label: '정원', grad: 'linear-gradient(135deg,#F1FAFF,#9FE3FF)', caption: '베란다에서 키우는 화분들. 올해는 안 죽이는 게 목표.' },
-      { id: 'p6', label: '다리', grad: 'linear-gradient(135deg,#BFE7FB,#146485)', caption: '비 온 다음날 물안개 낀 다리. 좋아하는 사진 중 하나.' }
-    ]
-  },
-  2: {
-    total: 9,
-    items: [
-      { id: 'q1', label: '드로잉', grad: 'linear-gradient(135deg,#F1FAFF,#63C4EE)', caption: '심심할 때 끄적인 낙서. 태블릿 산 지 얼마 안 돼서 아직 서툼.' },
-      { id: 'q2', label: '메모', grad: 'linear-gradient(135deg,#CDEEFF,#2E86C1)', caption: '다이어리 한 페이지. 글씨 못 써서 부끄럽지만 기록용으로.' },
-      { id: 'q3', label: '바다', grad: 'linear-gradient(135deg,#EAF6FE,#146485)', caption: '작년 여름에 다녀온 바다. 다시 가고 싶다.' },
-      { id: 'q4', empty: true },
-      { id: 'q5', label: '하늘', grad: 'linear-gradient(135deg,#DCEFFF,#9FE3FF)', caption: '구름이 산 모양처럼 생겨서 신기해서 찍음.' },
-      { id: 'q6', label: '새벽', grad: 'linear-gradient(135deg,#BFE7FB,#4FB6EF)', caption: '잠 안 와서 나간 새벽 산책. 조용해서 좋았다.' }
-    ]
-  }
-};
+/* ---- content data: loaded from data/*.json, posts fetched from posts/<cat>/<id>.html ---- */
+let gallery1 = [];
+let gallery2 = [];
+let logItems = [];
+const galPage = { 1: 1, 2: 1 };
+let activeCat = 1;
 
-const logData = [
-  { id: 'l1', date: '2026.09.01', title: '오랜만에 홈피 개편', excerpt: '배경 여백 넓게, 창 틀 다시 다 갈아엎었음. 갤러리 카테고리 두 개로 나눔.', body: '배경 여백 넓게, 창 틀 다시 다 갈아엎었음. 갤러리 카테고리 두 개로 나누고, 창마다 닫고 옮기고 크기 조절도 되게 만들었다. 예전 홈피 느낌 최대한 살리려고 신경 좀 썼음. 다음엔 방명록도 붙여볼까 고민 중.' },
-  { id: 'l2', date: '2026.08.24', title: '사진 정리하다가', excerpt: '예전 폴더 뒤지다가 못 올린 것들 갤러리 2에 추가할 예정.', body: '외장하드 정리하다가 2년 전 사진들 발견함. 다 못 올렸던 것들이라 갤러리 2에 천천히 추가할 예정. 화질이 애매한 것들은 그냥 추억으로 남겨두기로.' },
-  { id: 'l3', date: '2026.08.10', title: '방문자 카운터 3000 돌파', excerpt: '별거 아닌데 은근 뿌듯함. 계속 기록할 예정.', body: '누적 방문자 3000 넘었다. 별거 아닌 숫자인데 혼자 신남. 방문자 카운터 보는 재미로 홈피 계속 관리하게 되는 듯. 앞으로도 꾸준히 기록할 예정.' },
-  { id: 'l4', date: '2026.07.30', title: '링크 정리', excerpt: '죽은 링크 정리하고 메뉴에 검색 추가함.', body: '메뉴에 있던 죽은 링크들 다 정리했다. 검색 기능도 하나 추가함. 다음 업데이트 때는 방명록이랑 다이어리 잠금 기능도 넣어볼 생각.' }
-];
-
-/* ---- post (detail) view ---- */
-const postMedia = document.getElementById('postMedia');
-const postMeta = document.getElementById('postMeta');
-const postTitle = document.getElementById('postTitle');
-const postBodyText = document.getElementById('postBodyText');
-
-function openGalleryPost(cat, id){
-  const item = galleryData[cat].items.find(it => it.id === id);
-  if (!item) return;
-  postMedia.hidden = false;
-  postMeta.textContent = 'GALLERY ' + cat;
-  if (item.empty) {
-    postMedia.style.background = 'var(--panel-soft)';
-    postMedia.textContent = 'NO-IMG';
-    postTitle.textContent = '(빈 슬롯)';
-    postBodyText.textContent = '아직 사진을 올리지 않은 자리예요.';
-  } else {
-    postMedia.style.background = item.grad;
-    postMedia.textContent = '';
-    postTitle.textContent = item.label;
-    postBodyText.textContent = item.caption;
-  }
-  openWin('postWin');
+async function fetchJSON(path){
+  const res = await fetch(path);
+  if (!res.ok) throw new Error(path + ' (' + res.status + ')');
+  return res.json();
 }
 
-function openLogPost(id){
-  const item = logData.find(it => it.id === id);
-  if (!item) return;
-  postMedia.hidden = true;
-  postMeta.textContent = 'LOG · ' + item.date;
-  postTitle.textContent = item.title;
-  postBodyText.textContent = item.body;
+function galleryList(cat){ return cat === 1 ? gallery1 : gallery2; }
+
+/* ---- post (detail) view ---- */
+const postMeta = document.getElementById('postMeta');
+const postContent = document.getElementById('postContent');
+
+async function openPost(catPath, meta, title){
+  postMeta.textContent = meta;
+  postContent.innerHTML = '불러오는 중…';
   openWin('postWin');
+  try {
+    const res = await fetch('posts/' + catPath + '/' + encodeURIComponent(title) + '.html');
+    if (!res.ok) throw new Error();
+    postContent.innerHTML = await res.text();
+  } catch (e) {
+    postContent.innerHTML = '<p>본문을 불러오지 못했어요. (서버 없이 파일을 직접 열면 본문을 못 가져와요 — GitHub Pages 등으로 호스팅해서 확인해주세요.)</p>';
+  }
+}
+
+function openGalleryPost(cat, item){
+  openPost('gallery' + cat, 'GALLERY ' + cat, item.id);
+}
+function openLogPost(item){
+  openPost('log', 'LOG · ' + item.date, item.id);
 }
 
 document.getElementById('postBack').addEventListener('click', () => closeWin('postWin'));
 
 /* ---- gallery ---- */
-const galPage = { 1: 1, 2: 1 };
-let activeCat = 1;
-
-function totalPages(cat){ return Math.max(1, Math.ceil(galleryData[cat].total / 6)); }
+function totalPages(cat){ return Math.max(1, Math.ceil(galleryList(cat).length / 6)); }
 
 function renderGallery(cat){
   activeCat = cat;
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.cat == cat));
   document.getElementById('galTitle').textContent = 'Gallery ' + cat;
-  document.getElementById('galCount').textContent = galleryData[cat].total + ' posts';
+  const list = galleryList(cat);
+  document.getElementById('galCount').textContent = list.length + ' posts';
 
   const grid = document.getElementById('galGrid');
   grid.innerHTML = '';
-  galleryData[cat].items.forEach(item => {
-    const d = document.createElement('div');
-    d.setAttribute('role', 'button');
-    d.tabIndex = 0;
-    if (!item.empty) {
+
+  if (list.length === 0) {
+    grid.innerHTML = '<div class="gallery-empty">아직 업로드한 사진이 없어요. tools/upload.html로 첫 사진을 올려보세요.</div>';
+  } else {
+    const start = (galPage[cat] - 1) * 6;
+    list.slice(start, start + 6).forEach(item => {
+      const d = document.createElement('div');
       d.className = 'thumb';
-      d.innerHTML = '<div class="thumb-photo" style="background:' + item.grad + '"><span>' + item.label + '</span></div>';
-    } else {
-      d.className = 'thumb empty';
-      d.innerHTML = '<div class="thumb-photo"><span>NO-IMG</span></div>';
-    }
-    d.addEventListener('click', () => openGalleryPost(cat, item.id));
-    d.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openGalleryPost(cat, item.id); } });
-    grid.appendChild(d);
-  });
+      d.setAttribute('role', 'button');
+      d.tabIndex = 0;
+      d.innerHTML = '<div class="thumb-photo"><img src="' + item.thumb + '" alt="' + item.label + '" loading="lazy"><span>' + item.label + '</span></div>';
+      d.addEventListener('click', () => openGalleryPost(cat, item));
+      d.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openGalleryPost(cat, item); } });
+      grid.appendChild(d);
+    });
+  }
 
   const tp = totalPages(cat);
   document.getElementById('galPage').textContent = galPage[cat] + ' / ' + tp;
@@ -181,13 +175,16 @@ document.getElementById('galPrev').addEventListener('click', () => {
 document.getElementById('galNext').addEventListener('click', () => {
   if (galPage[activeCat] < totalPages(activeCat)) { galPage[activeCat]++; renderGallery(activeCat); }
 });
-renderGallery(1);
 
 /* ---- log ---- */
 function renderLog(){
   const list = document.getElementById('logList');
   list.innerHTML = '';
-  logData.forEach(item => {
+  if (logItems.length === 0) {
+    list.innerHTML = '<li class="gallery-empty">아직 쓴 글이 없어요.</li>';
+    return;
+  }
+  logItems.forEach(item => {
     const li = document.createElement('li');
     li.className = 'log-item';
     li.setAttribute('role', 'button');
@@ -197,12 +194,26 @@ function renderLog(){
       '<p class="log-title">' + item.title + '</p>' +
       '<p class="log-excerpt">' + item.excerpt + '</p>' +
       '<a class="log-more">더보기 ›</a>';
-    li.addEventListener('click', () => openLogPost(item.id));
-    li.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLogPost(item.id); } });
+    li.addEventListener('click', () => openLogPost(item));
+    li.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLogPost(item); } });
     list.appendChild(li);
   });
 }
-renderLog();
+
+/* ---- initial load ---- */
+(async function loadContent(){
+  try {
+    [gallery1, gallery2, logItems] = await Promise.all([
+      fetchJSON('data/gallery1.json'),
+      fetchJSON('data/gallery2.json'),
+      fetchJSON('data/log.json')
+    ]);
+  } catch (e) {
+    document.getElementById('galGrid').innerHTML = '<div class="gallery-empty">데이터를 불러오지 못했어요. 서버(GitHub Pages 등)로 열어주세요.</div>';
+  }
+  renderGallery(1);
+  renderLog();
+})();
 
 /* ---- bgm player ---- */
 const tracks = ['벚꽃 엔딩 (inst.)', '새벽감성 Lo-fi', '2004 Y2K Mix'];
