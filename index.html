@@ -26,6 +26,7 @@
 <div class="desktop-icons">
   <button class="dicon" data-open-target="profileWin"><span class="dicon-glyph">🖥️</span><span class="dicon-label">Profile</span></button>
   <button class="dicon" data-open-target="galleryWin"><span class="dicon-glyph">🖼️</span><span class="dicon-label">Gallery</span></button>
+  <button class="dicon" data-open-target="chatWin"><span class="dicon-glyph">💬</span><span class="dicon-label">Chat</span></button>
   <button class="dicon" data-open-target="logWin"><span class="dicon-glyph">📓</span><span class="dicon-label">Log</span></button>
   <button class="dicon" data-open-target="pairWin"><span class="dicon-glyph">🖇️</span><span class="dicon-label">Pair</span></button>
   <button class="dicon" data-open-target="bgmWidget"><span class="dicon-glyph">🎧</span><span class="dicon-label">BGM</span></button>
@@ -84,6 +85,26 @@
         <button id="galPrev">‹ PREV</button>
         <span class="pager-num" id="galPage">1 / 3</span>
         <button id="galNext">NEXT ›</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="win" id="chatWin" data-win="chatWin">
+    <div class="win-title">
+      <span class="win-title-label"><span class="win-title-icon" style="background:#63C4EE"></span>chat.log</span>
+      <span class="win-btns"><span>_</span><span>□</span><span class="win-close" data-target="chatWin" role="button" tabindex="0" aria-label="채팅 닫기">×</span></span>
+    </div>
+    <div class="win-body">
+      <div class="chat-header">
+        <div class="chat-avatar"></div>
+        <div class="chat-name"></div>
+      </div>
+      <div class="chat-thread">
+        <div class="chat-bubble them"></div>
+        <div class="chat-bubble me"></div>
+        <div class="chat-bubble them"></div>
+        <div class="chat-bubble me"></div>
+        <div class="chat-bubble them"></div>
       </div>
     </div>
   </section>
@@ -161,6 +182,7 @@
     <span class="tb-icon pixel" data-open-target="profileWin" role="button" tabindex="0">Profile</span>
     <span class="tb-icon pixel" data-open-target="menuWin" role="button" tabindex="0">Menu</span>
     <span class="tb-icon pixel" data-open-target="galleryWin" role="button" tabindex="0">Gallery</span>
+    <span class="tb-icon pixel" data-open-target="chatWin" role="button" tabindex="0">Chat</span>
     <span class="tb-icon pixel" data-open-target="logWin" role="button" tabindex="0">Log</span>
     <span class="tb-icon pixel" data-open-target="pairWin" role="button" tabindex="0">Pair</span>
     <span class="tb-icon pixel" data-open-target="bgmWidget" role="button" tabindex="0">BGM</span>
