@@ -436,6 +436,8 @@ img.dicon-glyph{width:32px;height:32px;object-fit:contain}
 }
 @media (max-width:920px){
   .win-body{flex:none}
+  #chatWin{height:55vh!important}
+  #chatWin .win-body{flex:1!important;overflow:auto}
 }
 
 /* bgm mini player */
