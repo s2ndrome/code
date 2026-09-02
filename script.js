@@ -106,6 +106,7 @@ async function fetchJSON(path){
 }
 
 function galleryList(cat){ return cat === 1 ? gallery1 : gallery2; }
+function galleryEmoji(cat){ return cat === 1 ? '💻' : '🛸'; }
 
 /* ---- post (detail) view ---- */
 const postMeta = document.getElementById('postMeta');
@@ -200,7 +201,7 @@ async function openPost(catPath, meta, title){
 }
 
 function openGalleryPost(cat, item){
-  openPost('gallery' + cat, 'GALLERY ' + cat, item.id);
+  openPost('gallery' + cat, galleryEmoji(cat), item.id);
 }
 function openLogPost(item){
   openPost('log', 'LOG · ' + item.date, item.id);
@@ -222,7 +223,7 @@ function totalPages(cat){ return Math.max(1, Math.ceil(galleryList(cat).length /
 function renderGallery(cat){
   activeCat = cat;
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.cat == cat));
-  document.getElementById('galTitle').textContent = 'Gallery ' + cat;
+  document.getElementById('galTitle').textContent = galleryEmoji(cat);
   const list = galleryList(cat);
   document.getElementById('galCount').textContent = list.length + ' posts';
 
