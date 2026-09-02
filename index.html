@@ -155,17 +155,20 @@
   </div>
   <div class="win-body">
     <div class="bgm-row">
-      <div class="eq" id="bgmEq"><span></span><span></span><span></span><span></span></div>
+      <div class="eq paused" id="bgmEq"><span></span><span></span><span></span><span></span></div>
       <div class="bgm-meta">
-        <div class="bgm-track" id="bgmTrack">벚꽃 엔딩 (inst.)</div>
-        <div class="bgm-sub">track 1 / 3</div>
+        <div class="bgm-track" id="bgmTrack"></div>
+        <div class="bgm-sub" id="bgmSub">track 1 / 5</div>
       </div>
     </div>
     <div class="bgm-controls">
       <button id="bgmPrev" aria-label="이전 곡">◀◀</button>
-      <button id="bgmPlay" aria-label="재생/일시정지">❚❚</button>
+      <button id="bgmPlay" aria-label="재생/일시정지">▶</button>
       <button id="bgmNext" aria-label="다음 곡">▶▶</button>
+      <button id="bgmListToggle" aria-label="재생목록 열기">☰</button>
     </div>
+    <ul class="bgm-playlist" id="bgmPlaylist" hidden></ul>
+    <audio id="bgmAudio" preload="none"></audio>
   </div>
 </section>
 

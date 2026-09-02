@@ -421,13 +421,26 @@ body{
 .bgm-sub{font-size:.66rem;color:var(--ink-faint)}
 .bgm-controls{display:flex;gap:6px;margin-top:7px;justify-content:center}
 .bgm-controls button{
-  width:28px;height:24px;border-radius:5px;
+  display:flex;align-items:center;justify-content:center;
+  width:26px;height:22px;border-radius:5px;padding:0;
   background:var(--panel-soft);color:var(--ink);
   border:1px solid var(--line-dark);
   box-shadow:inset -1px -1px 0 var(--line-dark), inset 1px 1px 0 var(--line-light);
-  font-size:.7rem;cursor:pointer;
+  font-size:.58rem;line-height:1;cursor:pointer;
 }
 .bgm-controls button:active{box-shadow:inset 1px 1px 0 var(--line-dark)}
+.bgm-playlist{
+  list-style:none;margin:8px 0 0;padding:0;
+  max-height:120px;overflow:auto;
+  border-top:1px dashed var(--line-dark);
+}
+.bgm-playlist li{
+  padding:6px 4px;font-size:.72rem;color:var(--ink);
+  cursor:pointer;border-bottom:1px dashed var(--line-dark);
+}
+.bgm-playlist li:last-child{border-bottom:none}
+.bgm-playlist li:hover{background:var(--panel-soft)}
+.bgm-playlist li.active{color:var(--titlebar-a);font-weight:700}
 
 @media (max-width:920px){
   .bgm{left:12px;right:12px;bottom:58px;width:auto}

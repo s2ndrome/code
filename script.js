@@ -224,26 +224,61 @@ function renderLog(){
 })();
 
 /* ---- bgm player ---- */
-const tracks = ['벚꽃 엔딩 (inst.)', '새벽감성 Lo-fi', '2004 Y2K Mix'];
+const tracks = [
+  { title: '미드나잇롤러코스터', file: '미드나잇롤러코스터.mp3' },
+  { title: '버그리포트', file: '버그리포트.mp3' },
+  { title: '궤도이탈', file: '궤도이탈.mp3' },
+  { title: '콜드캔디멜트', file: '콜드캔디멜트.mp3' },
+  { title: '언홀리얼라이언스', file: '언홀리얼라이언스.mp3' }
+];
 let trackIndex = 0;
-let playing = true;
+let playing = false;
+const bgmAudio = document.getElementById('bgmAudio');
 const bgmEq = document.getElementById('bgmEq');
 const bgmTrack = document.getElementById('bgmTrack');
+const bgmSub = document.getElementById('bgmSub');
 const bgmPlay = document.getElementById('bgmPlay');
+const bgmPlaylist = document.getElementById('bgmPlaylist');
+
+function renderPlaylist(){
+  bgmPlaylist.innerHTML = '';
+  tracks.forEach((t, i) => {
+    const li = document.createElement('li');
+    li.textContent = t.title;
+    li.className = i === trackIndex ? 'active' : '';
+    li.addEventListener('click', () => { setTrack(i); playBgm(); });
+    bgmPlaylist.appendChild(li);
+  });
+}
 
 function setTrack(i){
   trackIndex = (i + tracks.length) % tracks.length;
-  bgmTrack.textContent = tracks[trackIndex];
-  bgmTrack.nextElementSibling.textContent = 'track ' + (trackIndex + 1) + ' / ' + tracks.length;
+  bgmTrack.textContent = tracks[trackIndex].title;
+  bgmSub.textContent = 'track ' + (trackIndex + 1) + ' / ' + tracks.length;
+  bgmAudio.src = 'bgm/' + encodeURIComponent(tracks[trackIndex].file);
+  renderPlaylist();
 }
-function setPlaying(v){
+
+function setPlayingUI(v){
   playing = v;
   bgmEq.classList.toggle('paused', !playing);
   bgmPlay.textContent = playing ? '❚❚' : '▶';
 }
-document.getElementById('bgmPrev').addEventListener('click', () => setTrack(trackIndex - 1));
-document.getElementById('bgmNext').addEventListener('click', () => setTrack(trackIndex + 1));
-bgmPlay.addEventListener('click', () => setPlaying(!playing));
+function playBgm(){
+  bgmAudio.play().then(() => setPlayingUI(true)).catch(() => setPlayingUI(false));
+}
+function pauseBgm(){
+  bgmAudio.pause();
+  setPlayingUI(false);
+}
+
+document.getElementById('bgmPrev').addEventListener('click', () => { setTrack(trackIndex - 1); if (playing) playBgm(); });
+document.getElementById('bgmNext').addEventListener('click', () => { setTrack(trackIndex + 1); if (playing) playBgm(); });
+bgmPlay.addEventListener('click', () => { if (playing) pauseBgm(); else playBgm(); });
+bgmAudio.addEventListener('ended', () => { setTrack(trackIndex + 1); playBgm(); });
+document.getElementById('bgmListToggle').addEventListener('click', () => { bgmPlaylist.hidden = !bgmPlaylist.hidden; });
+
+setTrack(0);
 
 /* ---- clock ---- */
 function tickClock(){
