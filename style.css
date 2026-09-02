@@ -82,7 +82,6 @@ body{
   overflow:hidden;
   text-overflow:ellipsis;
 }
-.browser-fav{flex:none;color:var(--titlebar-a);font-size:.85rem}
 
 /* ---- desktop icons ---- */
 .desktop-icons{
