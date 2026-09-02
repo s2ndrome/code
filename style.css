@@ -387,7 +387,7 @@ body{
 .post-meta{font-family:'Galmuri11';font-size:.66rem;color:var(--ink-faint);margin-bottom:8px}
 .post-content{font-size:.86rem;line-height:1.7;color:var(--ink-soft)}
 .post-content img{max-width:100%;display:block;border-radius:6px;border:1px solid var(--line-dark);margin-bottom:12px}
-.post-content p{margin:0 0 10px}
+.post-content p{margin:0 0 10px;white-space:pre-line}
 .post-content p:last-child{margin-bottom:0}
 
 /* taskbar */
