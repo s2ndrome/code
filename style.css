@@ -103,6 +103,7 @@ body{
 }
 .dicon:hover,.dicon:focus-visible{background:rgba(20,100,133,.08);border-color:var(--line-dark)}
 .dicon-glyph{font-size:1.7rem;line-height:1}
+img.dicon-glyph{width:32px;height:32px;object-fit:contain}
 .dicon-label{background:var(--panel-soft);padding:1px 6px;border-radius:3px}
 
 /* ---- desktop stage (overlapping windows) ---- */
