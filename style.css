@@ -415,6 +415,7 @@ img.dicon-glyph{width:32px;height:32px;object-fit:contain}
   border:1px solid var(--chrome-dark);border-radius:6px;
   box-shadow:inset -1px -1px 0 var(--chrome-dark), inset 1px 1px 0 #D8F5FF;
   padding:7px 14px;display:flex;align-items:center;gap:6px;cursor:pointer;
+  text-decoration:none;
 }
 .tb-sep{width:1px;height:26px;background:rgba(255,255,255,.35);flex:none}
 .tb-icons{display:flex;gap:8px;flex:1;min-width:0;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
