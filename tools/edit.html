@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CODE 글 수정 도구</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 40px 20px;
+    background: #eef8ff;
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    color: #20394a;
+  }
+  main {
+    max-width: 640px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 14px;
+    padding: 32px;
+    box-shadow: 0 10px 40px rgba(20,100,133,.12);
+  }
+  h1 { margin: 0 0 6px; font-size: 20px; }
+  p.hint { margin: 0 0 20px; color: #5b7c8d; font-size: 13px; line-height: 1.6; }
+  details {
+    margin-bottom: 24px;
+    padding: 12px 14px;
+    border: 1px solid #cfeaf9;
+    border-radius: 8px;
+    background: #f7fbff;
+    font-size: 12.5px;
+    line-height: 1.8;
+    color: #3a5566;
+  }
+  details summary { cursor: pointer; font-weight: 600; color: #146485; }
+  details ol { margin: 10px 0 0; padding-left: 18px; }
+  details code { background: #e3f2fb; padding: 1px 5px; border-radius: 4px; }
+  label { display: block; margin: 18px 0 6px; font-size: 13px; font-weight: 600; }
+  input[type="text"], input[type="password"], input[type="date"], select, textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #cfeaf9;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 13px;
+    resize: vertical;
+  }
+  input[type="file"] { font-size: 13px; }
+  textarea { min-height: 140px; }
+  textarea.raw { min-height: 200px; font-family: ui-monospace, monospace; font-size: 12px; }
+  .row { display: flex; gap: 10px; }
+  .row > * { flex: 1; }
+  .field-group[hidden] { display: none; }
+  .checkbox-row { display: flex; align-items: center; gap: 8px; margin-top: 18px; }
+  .checkbox-row input { width: auto; }
+  .checkbox-row label { margin: 0; font-size: 13px; font-weight: 400; }
+  .btn-row { display: flex; gap: 10px; margin-top: 22px; }
+  button {
+    padding: 10px 20px;
+    border: 0;
+    border-radius: 8px;
+    background: #2e86c1;
+    color: #fff;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.danger { background: #d32f2f; }
+  button.secondary { background: #9db8c6; }
+  button:disabled { opacity: .5; cursor: default; }
+  .status { margin-top: 14px; font-size: 12.5px; color: #5b7c8d; white-space: pre-line; }
+  .status.error { color: #d32f2f; }
+  .status.done { color: #1a8a3e; font-weight: 600; }
+  hr { border: none; border-top: 1px solid #e3f2fb; margin: 26px 0; }
+</style>
+</head>
+<body>
+<main>
+  <h1>CODE 글 수정 도구</h1>
+  <p class="hint">
+    이미 올라간 갤러리 사진이나 로그 글을 골라서 내용을 고치거나 통째로 지울 수 있어요.
+    잠긴 로그 글은 비밀번호를 넣어야 내용을 불러올 수 있어요.
+  </p>
+
+  <details>
+    <summary>GitHub 토큰은 어떻게 만들어요? (처음 한 번만)</summary>
+    <ol>
+      <li>GitHub 로그인 후 <code>github.com/settings/personal-access-tokens/new</code> 접속</li>
+      <li>Repository access → <b>Only select repositories</b> 선택 → <code>s2ndrome/code</code> 선택</li>
+      <li>Permissions → <b>Contents</b> → <b>Read and write</b>로 설정</li>
+      <li>Generate token → 생성된 토큰(<code>github_pat_...</code>) 복사</li>
+      <li>아래 칸에 붙여넣기 — 업로드 도구랑 같은 토큰 써도 돼요</li>
+    </ol>
+  </details>
+
+  <label for="token">GitHub 토큰</label>
+  <input type="password" id="token" placeholder="github_pat_...">
+
+  <label for="category">카테고리</label>
+  <select id="category">
+    <option value="gallery1">GALLERY 1 (사진)</option>
+    <option value="gallery2">GALLERY 2 (사진)</option>
+    <option value="log">LOG (글)</option>
+  </select>
+
+  <div class="btn-row">
+    <button id="load-list-btn">목록 불러오기</button>
+  </div>
+
+  <div class="field-group" id="item-picker" hidden>
+    <label for="item-select">수정할 글</label>
+    <select id="item-select"></select>
+  </div>
+
+  <div class="field-group" id="log-unlock-group" hidden>
+    <p class="hint" style="margin:12px 0 0">🔒 이 글은 잠겨 있어요. 비밀번호를 넣고 불러와야 내용을 볼 수 있어요.</p>
+    <div class="row">
+      <input type="text" id="log-unlock-password" placeholder="현재 비밀번호">
+      <button id="log-unlock-btn" type="button" style="flex:none">불러오기</button>
+    </div>
+  </div>
+
+  <hr>
+
+  <div class="field-group" id="photo-edit-fields" hidden>
+    <label for="photo-title">제목 (그리드에 표시될 이름)</label>
+    <input type="text" id="photo-title">
+
+    <label for="photo-file">사진 교체 (선택, 안 고르면 기존 사진 유지)</label>
+    <input type="file" id="photo-file" accept="image/*">
+
+    <label for="photo-raw">본문 HTML (그대로 저장됨)</label>
+    <textarea id="photo-raw" class="raw"></textarea>
+  </div>
+
+  <div class="field-group" id="log-edit-fields" hidden>
+    <label for="log-title">제목 (바꾸면 새 제목으로 파일이 다시 만들어져요)</label>
+    <input type="text" id="log-title">
+
+    <div class="row">
+      <div>
+        <label for="log-date">날짜</label>
+        <input type="date" id="log-date">
+      </div>
+      <div>
+        <label for="log-excerpt">요약</label>
+        <input type="text" id="log-excerpt">
+      </div>
+    </div>
+
+    <label for="log-content">내용</label>
+    <textarea id="log-content"></textarea>
+
+    <div class="checkbox-row">
+      <input type="checkbox" id="log-lock-check">
+      <label for="log-lock-check">비밀번호로 잠그기</label>
+    </div>
+    <div id="log-password-row" hidden>
+      <label for="log-lock-password">비밀번호 (새로 걸거나 바꿀 때만 입력)</label>
+      <input type="text" id="log-lock-password" placeholder="이 글을 열 때 쓸 비밀번호">
+    </div>
+  </div>
+
+  <div class="btn-row" id="action-row" hidden>
+    <button id="save-btn">저장</button>
+    <button id="delete-btn" class="danger">삭제</button>
+  </div>
+
+  <p class="status" id="status"></p>
+</main>
+
+<script>
+const OWNER = "s2ndrome";
+const REPO = "code";
+const BRANCH = "main";
+const API = `https://api.github.com/repos/${OWNER}/${REPO}/contents`;
+
+const tokenInput = document.getElementById("token");
+const categorySelect = document.getElementById("category");
+const loadListBtn = document.getElementById("load-list-btn");
+const itemPicker = document.getElementById("item-picker");
+const itemSelect = document.getElementById("item-select");
+
+const logUnlockGroup = document.getElementById("log-unlock-group");
+const logUnlockPassword = document.getElementById("log-unlock-password");
+const logUnlockBtn = document.getElementById("log-unlock-btn");
+
+const photoFields = document.getElementById("photo-edit-fields");
+const photoTitleInput = document.getElementById("photo-title");
+const photoFileInput = document.getElementById("photo-file");
+const photoRawInput = document.getElementById("photo-raw");
+
+const logFields = document.getElementById("log-edit-fields");
+const logTitleInput = document.getElementById("log-title");
+const logDateInput = document.getElementById("log-date");
+const logExcerptInput = document.getElementById("log-excerpt");
+const logContentInput = document.getElementById("log-content");
+const logLockCheck = document.getElementById("log-lock-check");
+const logPasswordRow = document.getElementById("log-password-row");
+const logLockPasswordInput = document.getElementById("log-lock-password");
+
+const actionRow = document.getElementById("action-row");
+const saveBtn = document.getElementById("save-btn");
+const deleteBtn = document.getElementById("delete-btn");
+const status = document.getElementById("status");
+
+const savedToken = localStorage.getItem("code_gh_token");
+if (savedToken) tokenInput.value = savedToken;
+
+let currentList = null;      // full data/<cat>.json array, kept in sync
+let currentListSha = null;   // sha of data/<cat>.json
+let currentItem = null;      // the selected item object
+let currentPostSha = null;   // sha of posts/<cat>/<id>.html
+
+function isGallery(cat){ return cat === "gallery1" || cat === "gallery2"; }
+
+function setStatus(text, kind) {
+  status.textContent = text;
+  status.className = "status" + (kind ? " " + kind : "");
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+function utf8ToBase64(str) {
+  const bytes = new TextEncoder().encode(str);
+  let binary = "";
+  bytes.forEach(b => binary += String.fromCharCode(b));
+  return btoa(binary);
+}
+function bytesToBase64(bytes) {
+  let binary = "";
+  bytes.forEach(b => binary += String.fromCharCode(b));
+  return btoa(binary);
+}
+function base64ToBytes(b64) {
+  const binary = atob(b64.replace(/\n/g, ""));
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+function base64ToUtf8(b64) {
+  return new TextDecoder().decode(base64ToBytes(b64));
+}
+
+async function encryptPost(password, plaintext) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const baseKey = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveKey"]);
+  const key = await crypto.subtle.deriveKey(
+    { name: "PBKDF2", salt, iterations: 100000, hash: "SHA-256" },
+    baseKey, { name: "AES-GCM", length: 256 }, false, ["encrypt"]
+  );
+  const cipherBuf = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, new TextEncoder().encode(plaintext));
+  return `<div class="locked-post" data-salt="${bytesToBase64(salt)}" data-iv="${bytesToBase64(iv)}" data-cipher="${bytesToBase64(new Uint8Array(cipherBuf))}"></div>`;
+}
+function parseLockedPost(html) {
+  const m = html.match(/<div class="locked-post" data-salt="([^"]+)" data-iv="([^"]+)" data-cipher="([^"]+)">/);
+  if (!m) return null;
+  return { salt: m[1], iv: m[2], cipher: m[3] };
+}
+async function decryptLockedPost(locked, password) {
+  const baseKey = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveKey"]);
+  const key = await crypto.subtle.deriveKey(
+    { name: "PBKDF2", salt: base64ToBytes(locked.salt), iterations: 100000, hash: "SHA-256" },
+    baseKey, { name: "AES-GCM", length: 256 }, false, ["decrypt"]
+  );
+  const plainBuf = await crypto.subtle.decrypt({ name: "AES-GCM", iv: base64ToBytes(locked.iv) }, key, base64ToBytes(locked.cipher));
+  return new TextDecoder().decode(plainBuf);
+}
+
+async function getFile(path) {
+  const res = await fetch(`${API}/${path}?ref=${BRANCH}`, {
+    headers: { Authorization: `Bearer ${tokenInput.value.trim()}`, Accept: "application/vnd.github+json" }
+  });
+  if (!res.ok) throw new Error(`${path}을 못 불러왔어요 (${res.status}) — 토큰 권한을 확인해주세요.`);
+  return res.json();
+}
+async function putFile(path, base64Content, message, sha) {
+  const body = { message, content: base64Content, branch: BRANCH };
+  if (sha) body.sha = sha;
+  const res = await fetch(`${API}/${path}`, {
+    method: "PUT",
+    headers: { Authorization: `Bearer ${tokenInput.value.trim()}`, Accept: "application/vnd.github+json" },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) {
+    const detail = await res.json().catch(() => ({}));
+    throw new Error(`${path} 저장 실패 (${res.status}): ${detail.message || "알 수 없는 오류"}`);
+  }
+}
+async function deleteFile(path, message, sha) {
+  const res = await fetch(`${API}/${path}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${tokenInput.value.trim()}`, Accept: "application/vnd.github+json" },
+    body: JSON.stringify({ message, sha, branch: BRANCH })
+  });
+  if (!res.ok) {
+    const detail = await res.json().catch(() => ({}));
+    throw new Error(`${path} 삭제 실패 (${res.status}): ${detail.message || "알 수 없는 오류"}`);
+  }
+}
+function readFileAsBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(",")[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function resetFields() {
+  photoFields.hidden = true;
+  logFields.hidden = true;
+  actionRow.hidden = true;
+  logUnlockGroup.hidden = true;
+  currentItem = null;
+  currentPostSha = null;
+}
+
+categorySelect.addEventListener("change", () => {
+  itemPicker.hidden = true;
+  itemSelect.innerHTML = "";
+  resetFields();
+});
+
+loadListBtn.addEventListener("click", async () => {
+  const token = tokenInput.value.trim();
+  if (!token) { setStatus("토큰을 입력해주세요.", "error"); return; }
+  localStorage.setItem("code_gh_token", token);
+
+  const cat = categorySelect.value;
+  loadListBtn.disabled = true;
+  resetFields();
+  try {
+    setStatus(`data/${cat}.json 불러오는 중…`);
+    const jsonFile = await getFile(`data/${cat}.json`);
+    currentList = JSON.parse(base64ToUtf8(jsonFile.content));
+    currentListSha = jsonFile.sha;
+
+    itemSelect.innerHTML = "";
+    if (currentList.length === 0) {
+      setStatus("이 카테고리엔 아직 글이 없어요.", "error");
+      itemPicker.hidden = true;
+      return;
+    }
+    currentList.forEach((item, i) => {
+      const opt = document.createElement("option");
+      opt.value = i;
+      const label = isGallery(cat) ? item.label : item.title;
+      opt.textContent = (item.locked ? "🔒 " : "") + label;
+      itemSelect.appendChild(opt);
+    });
+    itemPicker.hidden = false;
+    setStatus(`${currentList.length}개 불러왔어요. 수정할 글을 골라주세요.`, "done");
+    itemSelect.dispatchEvent(new Event("change"));
+  } catch (err) {
+    setStatus(err.message, "error");
+  } finally {
+    loadListBtn.disabled = false;
+  }
+});
+
+itemSelect.addEventListener("change", async () => {
+  const cat = categorySelect.value;
+  const item = currentList[Number(itemSelect.value)];
+  resetFields();
+  currentItem = item;
+
+  if (isGallery(cat)) {
+    await loadGalleryItem(cat, item);
+  } else {
+    if (item.locked) {
+      logUnlockGroup.hidden = false;
+      setStatus("잠긴 글이에요. 비밀번호를 넣고 불러와주세요.");
+    } else {
+      await loadLogItem(cat, item, "");
+    }
+  }
+});
+
+async function loadGalleryItem(cat, item) {
+  try {
+    setStatus("본문 불러오는 중…");
+    const postFile = await getFile(`posts/${cat}/${encodeURIComponent(item.id)}.html`);
+    currentPostSha = postFile.sha;
+    photoTitleInput.value = item.label;
+    photoRawInput.value = base64ToUtf8(postFile.content);
+    photoFileInput.value = "";
+    photoFields.hidden = false;
+    actionRow.hidden = false;
+    setStatus("불러왔어요. 수정하고 저장을 눌러주세요.", "done");
+  } catch (err) {
+    setStatus(err.message, "error");
+  }
+}
+
+async function loadLogItem(cat, item, password) {
+  try {
+    setStatus("본문 불러오는 중…");
+    const postFile = await getFile(`posts/log/${encodeURIComponent(item.id)}.html`);
+    currentPostSha = postFile.sha;
+    let content = base64ToUtf8(postFile.content);
+
+    const locked = parseLockedPost(content);
+    if (locked) {
+      content = await decryptLockedPost(locked, password);
+    }
+
+    logTitleInput.value = item.title;
+    logDateInput.value = (item.date || "").replace(/\./g, "-");
+    logExcerptInput.value = item.excerpt || "";
+    logContentInput.value = content;
+    logLockCheck.checked = !!item.locked;
+    logPasswordRow.hidden = !item.locked;
+    logLockPasswordInput.value = "";
+    logFields.hidden = false;
+    logUnlockGroup.hidden = true;
+    actionRow.hidden = false;
+    setStatus("불러왔어요. 수정하고 저장을 눌러주세요.", "done");
+  } catch (err) {
+    setStatus("비밀번호가 틀렸거나 " + err.message, "error");
+  }
+}
+
+logUnlockBtn.addEventListener("click", () => {
+  loadLogItem(categorySelect.value, currentItem, logUnlockPassword.value);
+});
+
+logLockCheck.addEventListener("change", () => {
+  logPasswordRow.hidden = !logLockCheck.checked;
+});
+
+saveBtn.addEventListener("click", async () => {
+  const cat = categorySelect.value;
+  saveBtn.disabled = true;
+  deleteBtn.disabled = true;
+  try {
+    if (isGallery(cat)) {
+      await saveGalleryItem(cat);
+    } else {
+      await saveLogItem(cat);
+    }
+  } catch (err) {
+    setStatus(err.message, "error");
+  } finally {
+    saveBtn.disabled = false;
+    deleteBtn.disabled = false;
+  }
+});
+
+async function saveGalleryItem(cat) {
+  const idx = Number(itemSelect.value);
+  const item = currentList[idx];
+  const newTitle = photoTitleInput.value.trim();
+  const newFile = photoFileInput.files[0];
+  let rawHtml = photoRawInput.value;
+  if (!newTitle) throw new Error("제목을 입력해주세요.");
+
+  let thumbPath = item.thumb;
+
+  if (newFile) {
+    setStatus("새 사진 업로드 중…");
+    const ext = (newFile.name.split(".").pop() || "png").toLowerCase();
+    const newPath = `img/${cat}/${item.id}.${ext}`;
+    const fileB64 = await readFileAsBase64(newFile);
+    await putFile(newPath, fileB64, `Replace photo for ${item.id}`);
+    if (newPath !== thumbPath) {
+      try {
+        const oldFile = await getFile(thumbPath);
+        await deleteFile(thumbPath, `Remove old photo for ${item.id}`, oldFile.sha);
+      } catch (e) { /* old file already gone, ignore */ }
+      rawHtml = rawHtml.split(thumbPath).join(newPath);
+    }
+    thumbPath = newPath;
+  }
+
+  setStatus("본문 저장 중…");
+  await putFile(`posts/${cat}/${encodeURIComponent(item.id)}.html`, utf8ToBase64(rawHtml), `Edit post ${item.id}`, currentPostSha);
+
+  setStatus(`data/${cat}.json 업데이트 중…`);
+  currentList[idx] = { ...item, label: newTitle, thumb: thumbPath };
+  await putFile(`data/${cat}.json`, utf8ToBase64(JSON.stringify(currentList, null, 2) + "\n"), `Edit ${item.id} in ${cat}.json`, currentListSha);
+
+  setStatus(`완료! "${newTitle}" 수정됐어요.`, "done");
+  loadListBtn.click();
+}
+
+async function saveLogItem(cat) {
+  const idx = Number(itemSelect.value);
+  const item = currentList[idx];
+  const newTitle = logTitleInput.value.trim();
+  const newDate = (logDateInput.value || "").replace(/-/g, ".");
+  const newExcerpt = logExcerptInput.value.trim();
+  const newContent = logContentInput.value;
+  const locked = logLockCheck.checked;
+  const newPassword = logLockPasswordInput.value;
+  if (!newTitle || !newExcerpt || !newContent) throw new Error("제목, 요약, 내용을 모두 입력해주세요.");
+  if (locked && !newPassword) throw new Error("잠그려면 비밀번호를 입력해주세요 (기존 글이었어도 다시 입력해야 해요).");
+
+  const renamed = newTitle !== item.id;
+  if (renamed && currentList.some((it, i) => i !== idx && it.id === newTitle)) {
+    throw new Error(`이미 "${newTitle}"라는 제목의 글이 있어요. 다른 제목을 써주세요.`);
+  }
+  const postBody = locked ? await encryptPost(newPassword, newContent) : newContent;
+
+  setStatus("본문 저장 중…");
+  if (renamed) {
+    await putFile(`posts/log/${encodeURIComponent(newTitle)}.html`, utf8ToBase64(postBody), `Rename/edit log post to ${newTitle}`);
+    await deleteFile(`posts/log/${encodeURIComponent(item.id)}.html`, `Remove old log post ${item.id}`, currentPostSha);
+  } else {
+    await putFile(`posts/log/${encodeURIComponent(item.id)}.html`, utf8ToBase64(postBody), `Edit log post ${item.id}`, currentPostSha);
+  }
+
+  setStatus("data/log.json 업데이트 중…");
+  const newEntry = { id: newTitle, date: newDate, title: newTitle, excerpt: newExcerpt };
+  if (locked) newEntry.locked = true;
+  currentList[idx] = newEntry;
+  await putFile("data/log.json", utf8ToBase64(JSON.stringify(currentList, null, 2) + "\n"), `Edit "${newTitle}" in log.json`, currentListSha);
+
+  setStatus(`완료! "${newTitle}" 수정됐어요.`, "done");
+  loadListBtn.click();
+}
+
+deleteBtn.addEventListener("click", async () => {
+  if (!currentItem) return;
+  if (!confirm(`"${isGallery(categorySelect.value) ? currentItem.label : currentItem.title}" 글을 정말 삭제할까요? 되돌릴 수 없어요.`)) return;
+
+  const cat = categorySelect.value;
+  const idx = Number(itemSelect.value);
+  saveBtn.disabled = true;
+  deleteBtn.disabled = true;
+  try {
+    setStatus("본문 파일 삭제 중…");
+    await deleteFile(`posts/${cat}/${encodeURIComponent(currentItem.id)}.html`, `Delete post ${currentItem.id}`, currentPostSha);
+
+    if (isGallery(cat) && currentItem.thumb) {
+      setStatus("사진 파일 삭제 중…");
+      const imgFile = await getFile(currentItem.thumb).catch(() => null);
+      if (imgFile) await deleteFile(currentItem.thumb, `Delete photo for ${currentItem.id}`, imgFile.sha);
+    }
+
+    setStatus(`data/${cat}.json 업데이트 중…`);
+    currentList.splice(idx, 1);
+    await putFile(`data/${cat}.json`, utf8ToBase64(JSON.stringify(currentList, null, 2) + "\n"), `Remove ${currentItem.id} from ${cat}.json`, currentListSha);
+
+    setStatus("삭제됐어요.", "done");
+    loadListBtn.click();
+  } catch (err) {
+    setStatus(err.message, "error");
+  } finally {
+    saveBtn.disabled = false;
+    deleteBtn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
