@@ -154,7 +154,7 @@ svg.pi{image-rendering:pixelated;shape-rendering:crispEdges;display:block}
   #paintWin{left:240px;top:30px;width:660px}
   #linksWin{left:220px;top:120px;width:280px}
   #postWin{left:300px;top:20px;width:min(620px,calc(100vw - 360px));height:calc(100vh - 80px)}
-  #adminWin{left:340px;top:14px;width:min(700px,calc(100vw - 380px));height:calc(100vh - 70px)}
+  #adminWin{left:max(110px,calc(50vw - 500px));top:10px;width:min(1000px,calc(100vw - 130px));height:calc(100vh - 62px)}
 }
 
 /* ---------- TRACK: 유튜브 플레이어 ---------- */
@@ -208,7 +208,7 @@ svg.pi{image-rendering:pixelated;shape-rendering:crispEdges;display:block}
 .gallery-head h3{margin:0;font-size:14px}
 .gallery-count{font-family:var(--pixel);font-size:10px;color:var(--i4)}
 .tabs{display:flex;gap:3px;margin-bottom:12px;border-bottom:1px solid var(--i4)}
-.tab{flex:1 1 0;min-width:0;padding:4px 8px;font-family:var(--pixel);font-size:10px;color:var(--i6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:1px solid var(--i4);border-bottom:0;border-radius:3px 3px 0 0;background:var(--i1);cursor:pointer;position:relative;top:1px}
+.tab{flex:1 1 0;min-width:0;padding:2px 8px 3px;font-family:var(--mono);font-size:17px;line-height:1;color:var(--i6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:1px solid var(--i4);border-bottom:0;border-radius:3px 3px 0 0;background:var(--i1);cursor:pointer;position:relative;top:1px}
 .tab.active{color:var(--i7)}
 .tab.active{background:#fff}
 .gallery-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -291,6 +291,24 @@ svg.pi{image-rendering:pixelated;shape-rendering:crispEdges;display:block}
 .post-content img{max-width:100%;display:block;margin-bottom:12px;border:1px solid var(--i3)}
 .post-content p{margin:0 0 10px;white-space:pre-line}
 .post-content p:last-child{margin-bottom:0}
+/* 글 에디터(tools/editor.js)가 만드는 것들: 인용 · 구분선 · 목록 · 마크다운 블록 · 검열 */
+.post-content blockquote{margin:0 0 12px;padding:2px 0 2px 12px;border-left:2px solid var(--i3);color:var(--i5)}
+.post-content hr{border:0;border-top:1px solid var(--i3);margin:18px 0}
+.post-content ul,.post-content ol{margin:0 0 12px;padding-left:22px}
+.post-content a{color:var(--i6)}
+.post-content img[width]{height:auto}
+.mdb,.hb{white-space:normal}
+.mdb>:first-child{margin-top:0}
+.mdb h1,.mdb h2,.mdb h3,.mdb h4{margin:18px 0 8px;color:var(--i7);font-weight:700;line-height:1.4}
+.mdb h1{font-size:19px}.mdb h2{font-size:17px}.mdb h3{font-size:15px}.mdb h4{font-size:14px}
+.mdb li{margin:2px 0}
+.mdb code{padding:1px 5px;border-radius:4px;background:var(--i1);font:12px/1.6 ui-monospace,Menlo,monospace}
+.mdb pre{margin:0 0 12px;padding:12px 14px;overflow-x:auto;border-radius:6px;background:var(--i1);white-space:pre}
+.mdb pre code{padding:0;background:none}
+.mdb table{width:100%;margin:0 0 12px;border-collapse:collapse;font-size:12.5px}
+.mdb th,.mdb td{padding:6px 8px;border-bottom:1px solid var(--i2);text-align:left}
+.spoiler{filter:blur(5px);cursor:pointer;transition:filter .25s ease;-webkit-user-select:none;user-select:none;border-radius:3px}
+.spoiler.show{filter:none;cursor:auto;-webkit-user-select:auto;user-select:auto}
 
 /* 잠금 글 */
 .lock-gate{text-align:center;padding:22px 8px}
@@ -362,7 +380,7 @@ svg.pi{image-rendering:pixelated;shape-rendering:crispEdges;display:block}
   .paint-form label:first-child{flex:1}
   .paint-form label:first-child input{width:100%}
   .gallery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .tab{padding:4px 3px;font-size:9px;letter-spacing:-.02em}
+  .tab{padding:2px 4px 3px;font-size:16px}
   .tb-task{flex-basis:120px;font-size:11px}
   .tb-now{display:none}
   .admin-body iframe{height:70vh;height:70dvh;flex:none}

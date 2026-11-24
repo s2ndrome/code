@@ -321,10 +321,12 @@ setInterval(tickClock, 15000);
 /* ---------------------------------------------------------
    6. 글 · 아카이브 · 로그 (data/*.json, posts/<cat>/<id>.html)
    --------------------------------------------------------- */
-/* ARCHIVE · LOG 는 페어별로 섹션(탭) 3개예요. 탭 이름은 PAIRS 목록의 title을 써요.
-   ARCHIVE n번 = data/gallery<n>.json, LOG는 data/log.json 한 파일에 글마다 "pair": "1"~"3" */
-const SECTION_COUNT = 3;
-function sectionName(n){ return PAIRS[n - 1] ? PAIRS[n - 1].title : 'SECTION ' + n; }
+/* ARCHIVE · LOG 는 페어별로 섹션(탭) 3개예요. 탭 이름은 아래 SECTION_NAMES (PAIRS 순서와 같아요).
+   ARCHIVE n번 = data/gallery<n>.json, LOG는 data/log.json 한 파일에 글마다 "pair": "1"~"3"
+   이름을 바꾸면 tools/upload.html, tools/edit.html의 선택칸 이름도 같이 바꿔주세요. */
+const SECTION_NAMES = ['CXC', '9.44', 'D-cherry'];
+const SECTION_COUNT = SECTION_NAMES.length;
+function sectionName(n){ return SECTION_NAMES[n - 1] || 'SECTION ' + n; }
 const galleries = { 1: [], 2: [], 3: [] };
 let logItems = [];
 const galPage = { 1: 1, 2: 1, 3: 1 };
@@ -413,7 +415,17 @@ function wireLockGate(locked){
   input.addEventListener('keydown', e => { if (e.key === 'Enter') tryUnlock(); });
   if (!isMobile()) input.focus();
 }
+// 검열(스포일러): 흐린 글을 누르면(키보드는 Enter) 보여요
+postContent.addEventListener('click', e => {
+  const sp = e.target.closest && e.target.closest('.spoiler:not(.show)');
+  if (sp) { e.preventDefault(); e.stopPropagation(); sp.classList.add('show'); }
+}, true);
+postContent.addEventListener('keydown', e => {
+  const sp = e.target.closest && e.target.closest('.spoiler:not(.show)');
+  if (sp && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); sp.classList.add('show'); }
+});
 function runScripts(container){
+  container.querySelectorAll('.spoiler').forEach(sp => { sp.tabIndex = 0; sp.setAttribute('aria-label', '가려진 글 · 눌러서 보기'); });
   // innerHTML로 넣은 <script>는 실행되지 않아서 새 script로 바꿔 실행시켜요.
   container.querySelectorAll('script').forEach(old => {
     const s = document.createElement('script');
@@ -466,8 +478,8 @@ document.getElementById('postBack').addEventListener('click', () => {
 });
 
 /* ---- ADMIN: 글쓰기 · 글 수정 도구를 창 안에서 ----
-   이 저장소에 쓸 수 있는 토큰이 있는 브라우저에서만 ADMIN 아이콘·시작 메뉴·"수정" 버튼이 보여요.
-   다른 기기에서 처음 쓸 때는 /admin 으로 들어와서 도구에 토큰을 한 번 넣으면 돼요. */
+   이 저장소에 쓸 수 있는 토큰이 있는 브라우저에서만 ADMIN 아이콘·시작 메뉴·"수정" 버튼·/admin 주소가 열려요.
+   다른 기기에서 처음 쓸 때는 이동하.닷컴/tools/upload.html 에서 토큰을 한 번 넣으면 그 뒤로 보여요. */
 const TOKEN_KEY = 'code_gh_token';
 const adminFrame = document.getElementById('adminFrame');
 const adminOut = document.getElementById('adminOut');
@@ -478,7 +490,8 @@ function setAdmin(v){
   isAdmin = v;
   document.getElementById('adminIcon').hidden = !v;
   if (startItems.adminWin) startItems.adminWin.hidden = !v;
-  adminOut.hidden = !readToken();
+  adminOut.hidden = !v;
+  if (!v && !winById('adminWin').hidden) { closeWinAndNav('adminWin'); adminFrame.removeAttribute('src'); }
   syncPostEdit();
 }
 async function checkAdmin(){
@@ -517,7 +530,7 @@ adminOut.addEventListener('click', () => {
 });
 // 창 안의 도구에서 토큰을 저장하면 바로 관리 메뉴가 켜져요
 addEventListener('storage', e => { if (e.key === TOKEN_KEY) checkAdmin(); });
-checkAdmin();
+const adminChecked = checkAdmin(); // /admin 주소는 이 확인이 끝난 뒤, 관리자일 때만 열어요
 
 /* ---- PAIRS (폴더) ---- */
 const ALL_MEMBERS = PAIRS.flatMap(p => p.members.map(m => ({ ...m, pair: p })));
@@ -646,6 +659,10 @@ function route(){
   const seg = location.pathname.split('/').filter(Boolean).map(s => { try { return decodeURIComponent(s); } catch (e) { return s; } });
   const winId = WIN_OF[seg[0]];
   if (!winId) return;
+  if (winId === 'adminWin') {
+    adminChecked.then(() => { if (isAdmin) { routing = true; openWin('adminWin'); routing = false; } else if (location.pathname.startsWith('/admin')) history.replaceState(null, '', '/'); });
+    return;
+  }
   routing = true;
   try {
     openWin(winId);

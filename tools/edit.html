@@ -15,7 +15,7 @@
     color: #20394a;
   }
   main {
-    max-width: 640px;
+    max-width: 900px;
     margin: 0 auto;
     background: #fff;
     border-radius: 14px;
@@ -78,17 +78,6 @@
   .status.error { color: #d32f2f; }
   .status.done { color: #1a8a3e; font-weight: 600; }
   hr { border: none; border-top: 1px solid #e3f2fb; margin: 26px 0; }
-  .block-tools { display: flex; gap: 8px; margin: 8px 0; }
-  .block-tools button { margin: 0; padding: 6px 12px; border: 1px solid #cfeaf9; border-radius: 6px; background: #f7fbff; color: #146485; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
-  .block-tools button:hover { background: #e3f2fb; }
-  .block-modal { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(20,57,74,.35); }
-  .block-modal[hidden] { display: none; }
-  .block-box { width: min(600px, 100%); max-height: 90vh; overflow: auto; padding: 20px; border-radius: 12px; background: #fff; box-shadow: 0 16px 48px rgba(0,0,0,.2); }
-  .block-box h3 { margin: 0 0 10px; font-size: 15px; }
-  .block-box textarea { min-height: 220px; font-family: ui-monospace, monospace; font-size: 12.5px; }
-  .block-modal-label { margin: 12px 0 4px; font-size: 11px; font-weight: 600; color: #5b7c8d; }
-  .block-modal-preview { max-height: 200px; overflow: auto; padding: 10px 12px; border: 1px solid #cfeaf9; border-radius: 8px; font-size: 13px; line-height: 1.7; background: #f7fbff; }
-  .block-box .btn-row { margin-top: 14px; }
 </style>
 </head>
 <body>
@@ -115,10 +104,10 @@
 
   <label for="category">카테고리</label>
   <select id="category">
-    <!-- 사진 칸 1·2·3 = 홈페이지 ARCHIVE 탭 1·2·3 (페어 순서, script.js의 PAIRS와 맞춰요) -->
-    <option value="gallery1">ARCHIVE 1 · CODE × CANDY (사진)</option>
-    <option value="gallery2">ARCHIVE 2 · NINE × ROMY (사진)</option>
-    <option value="gallery3">ARCHIVE 3 · DEMON × CHERRY (사진)</option>
+    <!-- 사진 칸 1·2·3 = 홈페이지 ARCHIVE 탭 1·2·3 (script.js의 SECTION_NAMES와 맞춰요) -->
+    <option value="gallery1">ARCHIVE 1 · CXC (사진)</option>
+    <option value="gallery2">ARCHIVE 2 · 9.44 (사진)</option>
+    <option value="gallery3">ARCHIVE 3 · D-cherry (사진)</option>
     <option value="log">LOG (글)</option>
   </select>
 
@@ -148,13 +137,8 @@
     <label for="photo-file">사진 교체 (선택, 안 고르면 기존 사진 유지)</label>
     <input type="file" id="photo-file" accept="image/*">
 
-    <label for="photo-raw">본문 HTML (그대로 저장됨)</label>
-    <div class="block-tools" data-target="photo-raw">
-      <button type="button" data-block="html">+ HTML 블록</button>
-      <button type="button" data-block="md">+ 마크다운 블록</button>
-      <button type="button" data-preview>미리보기</button>
-    </div>
-    <textarea id="photo-raw" class="raw"></textarea>
+    <label for="photo-raw">본문</label>
+    <textarea id="photo-raw"></textarea>
   </div>
 
   <div class="field-group" id="log-edit-fields" hidden>
@@ -163,9 +147,9 @@
 
     <label for="log-pair">페어 (LOG 탭)</label>
     <select id="log-pair">
-      <option value="1">1 · CODE × CANDY</option>
-      <option value="2">2 · NINE × ROMY</option>
-      <option value="3">3 · DEMON × CHERRY</option>
+      <option value="1">1 · CXC</option>
+      <option value="2">2 · 9.44</option>
+      <option value="3">3 · D-cherry</option>
     </select>
 
     <div class="row">
@@ -180,11 +164,7 @@
     </div>
 
     <label for="log-content">내용</label>
-    <div class="block-tools" data-target="log-content">
-      <button type="button" data-block="html">+ HTML 블록</button>
-      <button type="button" data-block="md">+ 마크다운 블록</button>
-      <button type="button" data-preview>미리보기</button>
-    </div>
+    <p class="hint" style="margin:0 0 8px">보이는 그대로 고치면 돼요. 오른쪽 위에서 기본 · 마크다운 · HTML 모드를 바꿀 수 있고, MD 블록 · HTML 블록도 넣을 수 있어요. 스크립트가 든 글(폰 위젯 같은)은 HTML 모드로 열려요.</p>
     <textarea id="log-content"></textarea>
 
     <div class="checkbox-row">
@@ -205,30 +185,7 @@
   <p class="status" id="status"></p>
 </main>
 
-<div class="block-modal" id="block-modal" hidden>
-  <div class="block-box">
-    <h3 id="block-modal-title">HTML 블록</h3>
-    <textarea id="block-modal-input" placeholder=""></textarea>
-    <div class="block-modal-label">미리보기</div>
-    <div class="block-modal-preview" id="block-modal-preview"></div>
-    <div class="btn-row">
-      <button type="button" id="block-modal-cancel" class="secondary">취소</button>
-      <button type="button" id="block-modal-ok">넣기</button>
-    </div>
-  </div>
-</div>
-
-<div class="block-modal" id="preview-modal" hidden>
-  <div class="block-box">
-    <h3>미리보기</h3>
-    <p style="margin:0 0 10px;font-size:11.5px;color:#5b7c8d">여기서는 스크립트가 실행되지 않아요 (실제 사이트에 올리면 실행돼요)</p>
-    <div class="block-modal-preview" id="preview-body" style="max-height:60vh"></div>
-    <div class="btn-row">
-      <button type="button" id="preview-close" class="secondary">닫기</button>
-    </div>
-  </div>
-</div>
-
+<script src="editor.js?v=20261124a"></script>
 <script>
 if (new URLSearchParams(location.search).has("embed")) document.body.classList.add("embed");
 const OWNER = "s2ndrome";
@@ -250,6 +207,7 @@ const photoFields = document.getElementById("photo-edit-fields");
 const photoTitleInput = document.getElementById("photo-title");
 const photoFileInput = document.getElementById("photo-file");
 const photoRawInput = document.getElementById("photo-raw");
+const photoEditor = RichEditor(photoRawInput);
 
 const logFields = document.getElementById("log-edit-fields");
 const logTitleInput = document.getElementById("log-title");
@@ -257,6 +215,7 @@ const logDateInput = document.getElementById("log-date");
 const logPairInput = document.getElementById("log-pair");
 const logExcerptInput = document.getElementById("log-excerpt");
 const logContentInput = document.getElementById("log-content");
+const logEditor = RichEditor(logContentInput);
 const logLockCheck = document.getElementById("log-lock-check");
 const logPasswordRow = document.getElementById("log-password-row");
 const logLockPasswordInput = document.getElementById("log-lock-password");
@@ -283,102 +242,6 @@ function setStatus(text, kind) {
 function escapeHtml(str) {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
-
-/* ===== HTML 블록 · 마크다운 블록 ===== */
-const MD_LIB = "https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js";
-let markedPromise = null;
-function loadMarked() {
-  if (window.marked) return Promise.resolve();
-  if (!markedPromise) {
-    markedPromise = new Promise((resolve, reject) => {
-      const s = document.createElement("script");
-      s.src = MD_LIB;
-      s.onload = resolve;
-      s.onerror = () => reject(new Error("마크다운 변환 도구를 불러오지 못했어요."));
-      document.head.appendChild(s);
-    });
-  }
-  return markedPromise;
-}
-function escAttr(s) {
-  return s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-function md2html(src) {
-  const h = window.marked.parse(src || "", { gfm: true, breaks: true });
-  return h.split(/(<pre[\s\S]*?<\/pre>)/).map((p, i) => i % 2 ? p : p.replace(/>\s*\n\s*</g, "><").replace(/\n/g, " ")).join("").trim();
-}
-function insertAtCursor(ta, text) {
-  const start = ta.selectionStart ?? ta.value.length;
-  const end = ta.selectionEnd ?? ta.value.length;
-  ta.value = ta.value.slice(0, start) + text + ta.value.slice(end);
-  const pos = start + text.length;
-  ta.focus();
-  ta.setSelectionRange(pos, pos);
-}
-
-const blockModal = document.getElementById("block-modal");
-const blockModalTitle = document.getElementById("block-modal-title");
-const blockModalInput = document.getElementById("block-modal-input");
-const blockModalPreview = document.getElementById("block-modal-preview");
-let blockMode = "html";
-let blockTarget = null;
-
-function updateBlockPreview() {
-  const v = blockModalInput.value;
-  if (!v.trim()) { blockModalPreview.innerHTML = '<span style="color:#9bb6c4">미리보기가 여기 보여요</span>'; return; }
-  blockModalPreview.innerHTML = blockMode === "md" ? md2html(v) : v.replace(/<script[\s\S]*?<\/script>/gi, "");
-}
-blockModalInput.addEventListener("input", updateBlockPreview);
-
-function openBlockModal(type, target) {
-  blockMode = type;
-  blockTarget = target;
-  blockModalTitle.textContent = type === "md" ? "마크다운 블록" : "HTML 블록";
-  blockModalInput.placeholder = type === "md"
-    ? "# 제목\n\n**굵게**, *기울임*, > 인용, - 목록, [링크](https://...)"
-    : "<div style=\"...\">HTML 코드를 그대로 넣어요</div>";
-  blockModalInput.value = "";
-  blockModalPreview.innerHTML = "";
-  blockModal.hidden = false;
-  blockModalInput.focus();
-  if (type === "md") loadMarked().then(updateBlockPreview).catch(err => { blockModalPreview.textContent = err.message; });
-}
-function closeBlockModal() { blockModal.hidden = true; blockTarget = null; }
-
-document.getElementById("block-modal-ok").addEventListener("click", async () => {
-  const v = blockModalInput.value;
-  if (!v.trim() || !blockTarget) { closeBlockModal(); return; }
-  let block;
-  if (blockMode === "md") {
-    try { await loadMarked(); } catch (err) { alert(err.message); return; }
-    block = '<div class="mdb" data-md="' + escAttr(v) + '">' + md2html(v) + "</div>";
-  } else {
-    block = '<div class="hb">' + v + "</div>";
-  }
-  insertAtCursor(blockTarget, block + "\n");
-  closeBlockModal();
-});
-document.getElementById("block-modal-cancel").addEventListener("click", closeBlockModal);
-blockModal.addEventListener("click", e => { if (e.target === blockModal) closeBlockModal(); });
-
-document.querySelectorAll(".block-tools").forEach(tool => {
-  const target = document.getElementById(tool.dataset.target);
-  tool.querySelectorAll("[data-block]").forEach(btn => {
-    btn.addEventListener("click", () => openBlockModal(btn.dataset.block, target));
-  });
-  const previewBtn = tool.querySelector("[data-preview]");
-  if (previewBtn) previewBtn.addEventListener("click", () => openPreview(target));
-});
-
-const previewModal = document.getElementById("preview-modal");
-const previewBody = document.getElementById("preview-body");
-function openPreview(target) {
-  const v = target.value;
-  previewBody.innerHTML = v.trim() ? v.replace(/<script[\s\S]*?<\/script>/gi, "") : '<span style="color:#9bb6c4">내용이 없어요</span>';
-  previewModal.hidden = false;
-}
-document.getElementById("preview-close").addEventListener("click", () => { previewModal.hidden = true; });
-previewModal.addEventListener("click", e => { if (e.target === previewModal) previewModal.hidden = true; });
 
 function utf8ToBase64(str) {
   const bytes = new TextEncoder().encode(str);
@@ -425,6 +288,37 @@ async function decryptLockedPost(locked, password) {
   );
   const plainBuf = await crypto.subtle.decrypt({ name: "AES-GCM", iv: base64ToBytes(locked.iv) }, key, base64ToBytes(locked.cipher));
   return new TextDecoder().decode(plainBuf);
+}
+
+// 본문에 새로 넣은 사진: 긴 변 1600px로 줄여서 다시 그려 올려요 (촬영 정보 같은 메타데이터도 안 남아요)
+async function compressImage(file, maxDim = 1600, quality = 0.85) {
+  const bitmap = await createImageBitmap(file);
+  let { width, height } = bitmap;
+  if (Math.max(width, height) > maxDim) {
+    const scale = maxDim / Math.max(width, height);
+    width = Math.round(width * scale);
+    height = Math.round(height * scale);
+  }
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  canvas.getContext("2d").drawImage(bitmap, 0, 0, width, height);
+  bitmap.close();
+  const png = file.type === "image/png";
+  const blob = await new Promise(resolve => canvas.toBlob(resolve, png ? "image/png" : "image/jpeg", quality));
+  return blob || file;
+}
+function uploadInlinePhoto(folder, label) {
+  return async (file, i, n) => {
+    const isGif = file.type === "image/gif" || /\.gif$/i.test(file.name);
+    setStatus(`사진 압축 중… (${i}/${n})`);
+    const blob = isGif ? file : await compressImage(file);
+    const ext = isGif ? "gif" : (blob.type === "image/png" ? "png" : "jpg");
+    const imgPath = `img/${folder}/${Date.now()}-${i}.${ext}`;
+    setStatus(`사진 업로드 중… (${i}/${n})`);
+    await putFile(imgPath, await readFileAsBase64(blob), `Add photo for post: ${label}`);
+    return imgPath;
+  };
 }
 
 async function getFile(path) {
@@ -577,7 +471,7 @@ async function loadGalleryItem(cat, item) {
     const postFile = await getFile(`posts/${cat}/${encodeURIComponent(item.id)}.html`);
     currentPostSha = postFile.sha;
     photoTitleInput.value = item.label;
-    photoRawInput.value = base64ToUtf8(postFile.content);
+    photoEditor.setHTML(base64ToUtf8(postFile.content));
     photoFileInput.value = "";
     photoFields.hidden = false;
     actionRow.hidden = false;
@@ -603,7 +497,7 @@ async function loadLogItem(cat, item, password) {
     logPairInput.value = String(item.pair || "1");
     logDateInput.value = (item.date || "").replace(/\./g, "-");
     logExcerptInput.value = item.excerpt || "";
-    logContentInput.value = content;
+    logEditor.setHTML(content);
     logLockCheck.checked = !!item.locked;
     logPasswordRow.hidden = !item.locked;
     logLockPasswordInput.value = "";
@@ -647,8 +541,8 @@ async function saveGalleryItem(cat) {
   const item = currentList[idx];
   const newTitle = photoTitleInput.value.trim();
   const newFile = photoFileInput.files[0];
-  let rawHtml = photoRawInput.value;
   if (!newTitle) throw new Error("제목을 입력해주세요.");
+  let rawHtml = await photoEditor.finalize(uploadInlinePhoto(cat, item.id));
 
   let thumbPath = item.thumb;
 
@@ -687,16 +581,16 @@ async function saveLogItem(cat) {
   const newTitle = logTitleInput.value.trim();
   const newDate = (logDateInput.value || "").replace(/-/g, ".");
   const newExcerpt = logExcerptInput.value.trim();
-  const newContent = logContentInput.value;
   const locked = logLockCheck.checked;
   const newPassword = logLockPasswordInput.value;
-  if (!newTitle || !newExcerpt || !newContent) throw new Error("제목, 요약, 내용을 모두 입력해주세요.");
+  if (!newTitle || !newExcerpt || logEditor.isEmpty()) throw new Error("제목, 요약, 내용을 모두 입력해주세요.");
   if (locked && !newPassword) throw new Error("잠그려면 비밀번호를 입력해주세요 (기존 글이었어도 다시 입력해야 해요).");
 
   const renamed = newTitle !== item.id;
   if (renamed && currentList.some((it, i) => i !== idx && it.id === newTitle)) {
     throw new Error(`이미 "${newTitle}"라는 제목의 글이 있어요. 다른 제목을 써주세요.`);
   }
+  const newContent = await logEditor.finalize(uploadInlinePhoto("log", newTitle));
   const postBody = locked ? await encryptPost(newPassword, newContent) : newContent;
 
   setStatus("본문 저장 중…");
