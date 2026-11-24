@@ -39,7 +39,7 @@
 .punch{position:absolute;top:12px;left:50%;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:#000;box-shadow:0 0 0 1.5px #1a1a1d;z-index:91;pointer-events:none}
 
 /* ===== 네비게이션 바 ===== */
-#dh-navbar{position:absolute;left:0;right:0;bottom:0;height:var(--nb);z-index:70;display:flex;justify-content:space-around;align-items:center;background:rgba(10,10,12,.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid rgba(255,255,255,.04)}
+#dh-navbar{position:absolute;left:0;right:0;bottom:0;height:var(--nb);z-index:70;border-radius:0 0 var(--ir,0px) var(--ir,0px);display:flex;justify-content:space-around;align-items:center;background:rgba(10,10,12,.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid rgba(255,255,255,.04)}
 #dh-navbar button{width:64px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:14px;color:#d9dbe0}
 #dh-navbar button:active{background:rgba(255,255,255,.08)}
 #dh-navbar svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -126,7 +126,7 @@
 .dock .lbl{display:none}
 
 /* ===== 폴더 오버레이 ===== */
-.backdrop{position:absolute;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.backdrop{position:absolute;inset:0;border-radius:var(--ir,0px);background:rgba(0,0,0,.5);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
 .backdrop:active{transform:none;opacity:1}
 .folder-box{position:relative;margin:auto 18px;padding:18px 14px 12px;border-radius:30px;background:rgba(36,37,41,.82);border:1px solid rgba(255,255,255,.1);max-height:80%;overflow-y:auto}
 .folder-box h3{text-align:center;font-size:19px;font-weight:600;margin-bottom:16px;min-height:24px}

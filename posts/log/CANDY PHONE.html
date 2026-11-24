@@ -47,7 +47,7 @@
 .punch{position:absolute;top:12px;left:50%;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:#111;z-index:91;pointer-events:none}
 
 /* ===== 네비게이션 바 ===== */
-#cg-navbar{position:absolute;left:0;right:0;bottom:0;height:var(--nb);z-index:70;display:flex;justify-content:space-around;align-items:center;background:rgba(255,255,255,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid rgba(160,210,220,.35)}
+#cg-navbar{position:absolute;left:0;right:0;bottom:0;height:var(--nb);z-index:70;border-radius:0 0 var(--ir,0px) var(--ir,0px);display:flex;justify-content:space-around;align-items:center;background:rgba(255,255,255,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid rgba(160,210,220,.35)}
 #cg-navbar button{width:64px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:14px;color:#5d7380}
 #cg-navbar button:active{background:rgba(111,214,203,.18)}
 #cg-navbar svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -147,7 +147,7 @@
 .dock .lbl{display:none}
 
 /* ===== 알림 패널 ===== */
-.backdrop{position:absolute;inset:0;background:rgba(40,70,80,.35);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.backdrop{position:absolute;inset:0;border-radius:var(--ir,0px);background:rgba(40,70,80,.35);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
 .backdrop:active{transform:none!important;opacity:1!important}
 .panel-box{position:relative;margin:0 10px;padding:16px;border-radius:0 0 30px 30px;background:rgba(255,255,255,.97);border:1px solid var(--line);border-top:0;max-height:calc(100% - 16px);overflow-y:auto}
 .qs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
