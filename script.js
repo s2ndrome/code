@@ -26,7 +26,7 @@ const PAIRS = [
 
 /* 그림 방명록 저장 Worker 주소. workers/guestbook-worker.js 를 Cloudflare에 올린 뒤
    그 주소(예: 'https://code-guestbook.내계정.workers.dev')를 넣어요. 비어 있으면 "아직 연결되지 않았어요"가 떠요. */
-const GUESTBOOK_URL = '';
+const GUESTBOOK_URL = 'https://code-guestbook.jenojeno0423.workers.dev';
 
 /* ---------------------------------------------------------
    1. 픽셀 아이콘 (SVG로 그려요)
