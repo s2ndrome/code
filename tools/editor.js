@@ -93,7 +93,7 @@
         '<button type="button" data-act="quotes" title="“대사” 한 번에 꾸미기">“대사”</button>' +
         '<button type="button" data-act="mdblock" title="마크다운 블록: 마크다운으로 쓴 부분을 글 안에 넣어요">MD 블록</button>' +
         '<button type="button" data-act="htmlblock" title="HTML 블록: HTML 코드를 그대로 글 안에 넣어요">HTML 블록</button>' +
-        '<button type="button" data-act="spoiler" title="검열: 선택한 글을 흐리게 가려요 (누르면 보임). 검열된 글 안에서 누르면 풀려요">검열</button>' +
+        '<button type="button" data-act="spoiler" title="스포일러: 선택한 글을 흐리게 가려요 (누르면 보임). 스포일러 글 안에서 누르면 풀려요">스포일러</button>' +
         '<span class="sep"></span>' +
         '<button type="button" data-cmd="removeFormat" title="서식 지우기">⌫</button>' +
         '<button type="button" data-cmd="undo" title="되돌리기">↶</button>' +
@@ -166,7 +166,7 @@
         exec('formatBlock', blk && area.contains(blk) ? 'div' : 'blockquote');
       }
       if (a === 'hr') exec('insertHTML', '<hr>');
-      if (a === 'spoiler') { // 검열: 선택한 글을 <span class="spoiler">로 감싸요. 이미 검열된 곳에서 누르면 풀어요
+      if (a === 'spoiler') { // 스포일러: 선택한 글을 <span class="spoiler">로 감싸요. 이미 스포일러인 곳에서 누르면 풀어요
         restore(); if (srcMode) return;
         const sel = getSelection(); if (!sel.rangeCount) return;
         const r = sel.getRangeAt(0), at = r.commonAncestorContainer, el = at.nodeType === 1 ? at : at.parentNode;
@@ -464,7 +464,7 @@
           if (src == null && html.replace(/<[^>]*>|&nbsp;|\s/g, '')) {
             await lib('TurndownService');
             src = new TurndownService({ headingStyle: 'atx', codeBlockStyle: 'fenced', bulletListMarker: '-' }).turndown(html);
-            say('지금 글을 마크다운으로 바꿨어요. 글자색·크기·검열 같은 꾸밈은 마크다운에 없어서 빠질 수 있어요.');
+            say('지금 글을 마크다운으로 바꿨어요. 글자색·크기·스포일러 같은 꾸밈은 마크다운에 없어서 빠질 수 있어요.');
           }
           mdTa.value = src || '';
         }

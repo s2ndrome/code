@@ -415,7 +415,7 @@ function wireLockGate(locked){
   input.addEventListener('keydown', e => { if (e.key === 'Enter') tryUnlock(); });
   if (!isMobile()) input.focus();
 }
-// 검열(스포일러): 흐린 글을 누르면(키보드는 Enter) 보여요
+// 스포일러: 흐린 글을 누르면(키보드는 Enter) 보여요
 postContent.addEventListener('click', e => {
   const sp = e.target.closest && e.target.closest('.spoiler:not(.show)');
   if (sp) { e.preventDefault(); e.stopPropagation(); sp.classList.add('show'); }
@@ -513,7 +513,7 @@ function syncPostEdit(){
 }
 function setAdminTool(tool, query){
   document.querySelectorAll('.admin-tab').forEach(b => b.classList.toggle('is-on', b.dataset.tool === tool));
-  adminFrame.src = 'tools/' + tool + '.html?embed=1' + (query || '');
+  adminFrame.src = 'tools/' + tool + '.html?embed=1&v=' + Date.now() + (query || ''); // v=: 예전 도구 페이지가 캐시돼서 뜨지 않게
 }
 document.querySelectorAll('.admin-tab').forEach(b => b.addEventListener('click', () => setAdminTool(b.dataset.tool)));
 postEdit.addEventListener('click', () => {

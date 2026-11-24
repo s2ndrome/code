@@ -104,11 +104,11 @@
 
   <label for="category">카테고리</label>
   <select id="category">
+    <option value="log" selected>LOG (글)</option>
     <!-- 사진 칸 1·2·3 = 홈페이지 ARCHIVE 탭 1·2·3 (script.js의 SECTION_NAMES와 맞춰요) -->
     <option value="gallery1">ARCHIVE 1 · CXC (사진)</option>
     <option value="gallery2">ARCHIVE 2 · 9.44 (사진)</option>
     <option value="gallery3">ARCHIVE 3 · D-cherry (사진)</option>
-    <option value="log">LOG (글)</option>
   </select>
 
   <div class="btn-row">
@@ -185,7 +185,7 @@
   <p class="status" id="status"></p>
 </main>
 
-<script src="editor.js?v=20261124a"></script>
+<script src="editor.js?v=20261124b"></script>
 <script>
 if (new URLSearchParams(location.search).has("embed")) document.body.classList.add("embed");
 const OWNER = "s2ndrome";

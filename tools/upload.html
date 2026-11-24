@@ -99,25 +99,25 @@
 
   <label for="category">카테고리</label>
   <select id="category">
+    <option value="log" selected>LOG (글)</option>
     <!-- 사진 칸 1·2·3 = 홈페이지 ARCHIVE 탭 1·2·3 (script.js의 SECTION_NAMES와 맞춰요) -->
     <option value="gallery1">ARCHIVE 1 · CXC (사진)</option>
     <option value="gallery2">ARCHIVE 2 · 9.44 (사진)</option>
     <option value="gallery3">ARCHIVE 3 · D-cherry (사진)</option>
-    <option value="log">LOG (글)</option>
   </select>
 
-  <div class="field-group" id="photo-fields">
+  <div class="field-group" id="photo-fields" hidden>
     <label for="photo">사진 파일</label>
     <input type="file" id="photo" accept="image/*">
 
     <label for="photo-title">제목 (그리드에 표시될 이름)</label>
     <input type="text" id="photo-title" placeholder="예: 풍경">
 
-    <label for="photo-caption">캡션 (선택, 본문에 들어갈 설명)</label>
-    <textarea id="photo-caption" placeholder="사진에 대한 짧은 설명 (안 써도 됨)"></textarea>
+    <label for="photo-caption">본문 (선택 · 사진 아래에 들어가요)</label>
+    <textarea id="photo-caption" placeholder="사진에 대한 글을 써주세요 (안 써도 돼요)"></textarea>
   </div>
 
-  <div class="field-group" id="log-fields" hidden>
+  <div class="field-group" id="log-fields">
     <label for="log-title">제목</label>
     <input type="text" id="log-title" placeholder="예: 오늘의 일기">
 
@@ -152,7 +152,7 @@
   <p class="status" id="status"></p>
 </main>
 
-<script src="editor.js?v=20261124a"></script>
+<script src="editor.js?v=20261124b"></script>
 <script>
 if (new URLSearchParams(location.search).has("embed")) document.body.classList.add("embed");
 const OWNER = "s2ndrome";
@@ -167,6 +167,7 @@ const logFields = document.getElementById("log-fields");
 const photoInput = document.getElementById("photo");
 const photoTitleInput = document.getElementById("photo-title");
 const photoCaptionInput = document.getElementById("photo-caption");
+const photoEditor = RichEditor(photoCaptionInput);
 const logTitleInput = document.getElementById("log-title");
 const logDateInput = document.getElementById("log-date");
 const logPairInput = document.getElementById("log-pair");
@@ -276,15 +277,15 @@ async function compressImage(file, maxDim = 1600, quality = 0.85) {
   const blob = await new Promise(resolve => canvas.toBlob(resolve, png ? "image/png" : "image/jpeg", quality));
   return blob || file;
 }
-function uploadInlinePhoto(title) {
+function uploadInlinePhoto(folder, label) {
   return async (file, i, n) => {
     const isGif = file.type === "image/gif" || /\.gif$/i.test(file.name);
     setStatus(`사진 압축 중… (${i}/${n})`);
     const blob = isGif ? file : await compressImage(file);
     const ext = isGif ? "gif" : (blob.type === "image/png" ? "png" : "jpg");
-    const imgPath = `img/log/${Date.now()}-${i}.${ext}`;
+    const imgPath = `img/${folder}/${Date.now()}-${i}.${ext}`;
     setStatus(`사진 업로드 중… (${i}/${n})`);
-    await putFile(imgPath, await readFileAsBase64(blob), `Add photo for log post: ${title}`);
+    await putFile(imgPath, await readFileAsBase64(blob), `Add photo for post: ${label}`);
     return imgPath;
   };
 }
@@ -335,7 +336,6 @@ async function updateJson(path, mutate, message) {
 
 async function uploadPhoto(token, category) {
   const title = photoTitleInput.value.trim();
-  const caption = photoCaptionInput.value.trim();
   const file = photoInput.files[0];
   if (!title || !file) throw new Error("사진과 제목을 모두 입력해주세요.");
 
@@ -365,14 +365,14 @@ async function uploadPhoto(token, category) {
   }, `Add ${id} to ${category}.json`);
 
   setStatus("본문 글 생성 중…");
-  let postHtml = `<img src="${imgPath}" alt="${escapeHtml(title)}">\n`;
-  if (caption) postHtml += `<p>${escapeHtml(caption)}</p>\n`;
+  const body = photoEditor.isEmpty() ? "" : await photoEditor.finalize(uploadInlinePhoto(category, id));
+  const postHtml = `<img src="${imgPath}" alt="${escapeHtml(title)}">\n` + (body ? body + "\n" : "");
   await putFile(`posts/${category}/${id}.html`, utf8ToBase64(postHtml), `Add post for ${id}`);
 
   setStatus(`완료! ${category}에 "${title}" 사진이 등록됐어요.`, "done");
   photoInput.value = "";
   photoTitleInput.value = "";
-  photoCaptionInput.value = "";
+  photoEditor.clear();
 }
 
 async function uploadLog(token) {
@@ -388,7 +388,7 @@ async function uploadLog(token) {
   // 사진을 올리기 전에 제목이 겹치는지 먼저 봐요 (겹치면 사진만 덩그러니 올라가니까)
   const current = JSON.parse(base64ToUtf8((await getFile("data/log.json")).content));
   if (current.some(item => item.id === title)) throw new Error(`이미 "${title}"라는 제목의 글이 있어요. 다른 제목을 써주세요.`);
-  const content = await editor.finalize(uploadInlinePhoto(title));
+  const content = await editor.finalize(uploadInlinePhoto("log", title));
 
   const entry = { id: title, date, title, excerpt, pair: logPairInput.value };
   if (locked) entry.locked = true;

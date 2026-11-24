@@ -291,7 +291,7 @@ svg.pi{image-rendering:pixelated;shape-rendering:crispEdges;display:block}
 .post-content img{max-width:100%;display:block;margin-bottom:12px;border:1px solid var(--i3)}
 .post-content p{margin:0 0 10px;white-space:pre-line}
 .post-content p:last-child{margin-bottom:0}
-/* 글 에디터(tools/editor.js)가 만드는 것들: 인용 · 구분선 · 목록 · 마크다운 블록 · 검열 */
+/* 글 에디터(tools/editor.js)가 만드는 것들: 인용 · 구분선 · 목록 · 마크다운 블록 · 스포일러 */
 .post-content blockquote{margin:0 0 12px;padding:2px 0 2px 12px;border-left:2px solid var(--i3);color:var(--i5)}
 .post-content hr{border:0;border-top:1px solid var(--i3);margin:18px 0}
 .post-content ul,.post-content ol{margin:0 0 12px;padding-left:22px}
