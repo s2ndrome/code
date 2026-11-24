@@ -672,7 +672,13 @@ function onWinHidden(id){
    --------------------------------------------------------- */
 const mp = {
   player: null, ready: false, loading: false, wantPlay: false,
-  ids: [], titles: {}, timer: null
+  ids: [], titles: {}, timer: null,
+  shuffle: false, cur: -1, bag: [], hist: [], goingBack: false
+};
+// 버튼 기호는 글자 대신 SVG로 그려요 (글자는 폰트마다 크기·위치가 달라서 원 중앙에 안 맞아요)
+const MP_ICON = {
+  play:  '<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M3.5 1.5v9l7-4.5z" fill="currentColor"/></svg>',
+  pause: '<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 1.5h2.6v9H2.5zM6.9 1.5h2.6v9H6.9z" fill="currentColor"/></svg>'
 };
 const mpEl = {
   idle: document.getElementById('mpIdle'),
@@ -710,6 +716,34 @@ function mpReady(){
   let tries = 0;
   const t = setInterval(() => { if (mpRefreshList() || ++tries > 20) clearInterval(t); }, 500);
   if (mp.wantPlay) mp.player.playVideo();
+}
+/* ---- 셔플: 한 바퀴 다 돌 때까지 같은 곡이 다시 안 나오게 섞어서 뽑아요 ---- */
+function mpPickRandom(){
+  const n = mp.ids.length;
+  if (n < 2) return 0;
+  mp.bag = mp.bag.filter(i => i < n && i !== mp.cur);
+  if (!mp.bag.length) mp.bag = [...Array(n).keys()].filter(i => i !== mp.cur);
+  return mp.bag.splice(Math.floor(Math.random() * mp.bag.length), 1)[0];
+}
+function mpNextTrack(){
+  if (!mp.ready) return;
+  mpHideIdle();
+  if (mp.shuffle && mp.ids.length > 1) mp.player.playVideoAt(mpPickRandom());
+  else mp.player.nextVideo();
+}
+function mpPrevTrack(){
+  if (!mp.ready) return;
+  mpHideIdle();
+  if (mp.shuffle && mp.hist.length) { mp.goingBack = true; mp.player.playVideoAt(mp.hist.pop()); }
+  else mp.player.previousVideo();
+}
+function mpSetShuffle(on){
+  mp.shuffle = on;
+  mp.bag = [];
+  const b = document.getElementById('mpShuffle');
+  b.classList.toggle('is-on', on);
+  b.setAttribute('aria-pressed', String(on));
+  try { localStorage.setItem('code_mp_shuffle', on ? '1' : ''); } catch (e) {}
 }
 function mpRefreshList(){
   const ids = mp.player && mp.player.getPlaylist && mp.player.getPlaylist();
@@ -778,13 +812,23 @@ function mpStateChange(e){
   const title = mpCurrentTitle();
   if (e.data === S.PLAYING) {
     mpHideIdle();
-    mpEl.play.textContent = '❚❚';
-    mpEl.state.textContent = 'Playing · youtube.com';
+    mpEl.play.innerHTML = MP_ICON.pause;
+    mpEl.state.textContent = 'Playing · youtube.com' + (mp.shuffle ? ' · 셔플' : '');
     if (!mp.timer) mp.timer = setInterval(mpTick, 500);
+    const i = mp.player.getPlaylistIndex();
+    if (i !== mp.cur) { // 이전 곡 기록 (셔플일 때 ◀◀로 돌아가려고)
+      if (mp.cur >= 0 && !mp.goingBack) mp.hist.push(mp.cur);
+      if (mp.hist.length > 100) mp.hist.shift();
+      mp.goingBack = false;
+      mp.cur = i;
+      mp.bag = mp.bag.filter(x => x !== i);
+    }
   } else {
-    mpEl.play.textContent = '▶';
+    mpEl.play.innerHTML = MP_ICON.play;
     if (mp.timer && e.data !== S.BUFFERING) { clearInterval(mp.timer); mp.timer = null; }
     mpEl.state.textContent = e.data === S.PAUSED ? 'Paused' : e.data === S.BUFFERING ? 'Buffering…' : e.data === S.ENDED ? 'Ended' : 'Ready';
+    // 셔플이면 곡이 끝났을 때 유튜브가 순서대로 넘기기 전에 아무 곡이나 골라 틀어요
+    if (e.data === S.ENDED && mp.shuffle) mpNextTrack();
   }
   if (title) {
     mpEl.now.textContent = title;
@@ -795,7 +839,7 @@ function mpStateChange(e){
 }
 function mpError(){
   mpEl.state.textContent = '재생할 수 없는 곡이라 다음 곡으로 넘어가요';
-  setTimeout(() => { if (mp.player) mp.player.nextVideo(); }, 1500);
+  setTimeout(mpNextTrack, 1500);
 }
 function mpPlayPause(){
   mpHideIdle();
@@ -805,8 +849,10 @@ function mpPlayPause(){
 }
 mpEl.idle.addEventListener('click', mpPlayPause);
 mpEl.play.addEventListener('click', mpPlayPause);
-document.getElementById('mpPrev').addEventListener('click', () => { if (mp.ready) { mpHideIdle(); mp.player.previousVideo(); } });
-document.getElementById('mpNext').addEventListener('click', () => { if (mp.ready) { mpHideIdle(); mp.player.nextVideo(); } });
+document.getElementById('mpPrev').addEventListener('click', mpPrevTrack);
+document.getElementById('mpNext').addEventListener('click', mpNextTrack);
+document.getElementById('mpShuffle').addEventListener('click', () => mpSetShuffle(!mp.shuffle));
+try { if (localStorage.getItem('code_mp_shuffle')) mpSetShuffle(true); } catch (e) {}
 mpEl.seek.addEventListener('click', e => {
   if (!mp.ready) return;
   const r = mpEl.seek.getBoundingClientRect();
