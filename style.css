@@ -165,7 +165,7 @@ svg.pi{image-rendering:pixelated;shape-rendering:crispEdges;display:block}
 .mp-idle{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;border:0;background:transparent;color:#CBE5F7;cursor:pointer}
 .mp-idle-btn{width:64px;height:44px;border-radius:12px;display:grid;place-items:center;color:#fff;font-size:18px;background:linear-gradient(#8FCDF2,#3A8FD2 55%,#2A74B5);border:1px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.35)}
 .mp-idle-txt{font-size:12px}
-.mp-list{width:220px;flex:none;display:flex;flex-direction:column;background:#fff;border:1px solid var(--i6);min-height:0}
+.mp-list{width:220px;flex:none;display:flex;flex-direction:column;background:#fff;border:1px solid var(--i6);min-height:0;contain:size} /* contain:size: 곡이 많아도 목록이 줄 높이를 늘리지 않고, 16:9 화면 높이에 맞춰 안에서 스크롤돼요 */
 .mp-list-head{display:flex;justify-content:space-between;padding:5px 8px;font-size:10px;color:var(--i6);background:linear-gradient(var(--i1),var(--i2));border-bottom:1px solid var(--i3)}
 .mp-tracks{list-style:none;margin:0;padding:0;overflow:auto;flex:1;counter-reset:t}
 .mp-tracks li{counter-increment:t;display:flex;align-items:center;gap:8px;padding:6px 8px;border-bottom:1px dotted var(--i2);font-size:12px;cursor:pointer;white-space:nowrap}
@@ -350,7 +350,7 @@ svg.pi{image-rendering:pixelated;shape-rendering:crispEdges;display:block}
   .win-title{cursor:default}
   .win-btns .wb[data-g="max"]{display:none}
   .mp-main{flex-direction:column}
-  .mp-list{width:auto;max-height:150px}
+  .mp-list{width:auto;height:150px;contain:none}
   .mp-time{display:none}
   .paint-palette{grid-template-columns:repeat(8,16px)}
   .paint-tools{grid-template-columns:26px}
