@@ -9,7 +9,7 @@
   --font:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic","Segoe UI",sans-serif;
 }
 :where(#dh-wrap) *,:where(#dh-wrap) *::before,:where(#dh-wrap) *::after{box-sizing:border-box;margin:0;padding:0}
-#dh-wrap{display:flex;justify-content:center;padding:12px 0;color:var(--text);font-family:var(--font);-webkit-font-smoothing:antialiased;line-height:normal;text-align:left}
+#dh-wrap{display:flex;justify-content:center;padding:8px 0;color:var(--text);font-family:var(--font);-webkit-font-smoothing:antialiased;line-height:normal;text-align:left}
 :where(#dh-wrap) button{font:inherit;color:inherit;background:none;border:0;margin:0}
 .tap,[data-act]{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
 [data-act]{transition:transform .12s ease,background-color .15s ease,opacity .15s ease}
@@ -17,9 +17,9 @@
 :where(#dh-wrap) input{font:inherit;color:inherit}
 
 /* ===== 기기 프레임 ===== */
-#dh-phone{position:relative;container-type:inline-size;width:min(86vw,330px);height:min(calc(min(86vw,330px) * 1.9),78vh);min-height:470px;border-radius:30px;--ir:30px;overflow:hidden;overflow:clip;background:#000;isolation:isolate}
+#dh-phone{position:relative;container-type:inline-size;width:min(100%,82vw,300px);height:auto;aspect-ratio:10/19;max-height:min(74svh,580px);min-height:430px;border-radius:28px;--ir:28px;overflow:hidden;overflow:clip;background:#000;isolation:isolate}
 @media (min-width:520px){
-  #dh-phone{--ir:33px;width:350px;height:min(700px,88vh);border-radius:42px;border:9px solid #1f2023;background:#1f2023;
+  #dh-phone{--ir:31px;width:320px;height:min(620px,86vh);aspect-ratio:auto;max-height:none;border-radius:40px;border:9px solid #1f2023;background:#1f2023;
     box-shadow:0 0 0 2px #4a4c52,0 0 0 3px #111,0 40px 80px rgba(0,0,0,.6)}
 }
 
