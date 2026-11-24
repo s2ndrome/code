@@ -1,0 +1,959 @@
+<div id="nn-wrap">
+<style>
+#nn-wrap{
+  --red:#ff3b30; --green:#34c759; --sb:44px; --nb:30px;
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic","Segoe UI",sans-serif;
+  --page:#0a0a0b; --frame:#2a2a2c; --bg:#000; --bar:#0d0d0e; --card:#1c1c1e; --line:#2c2c2e; --line2:#1a1a1c;
+  --text:#f2f2f7; --sub:#8e8e93; --acc:#0a84ff; --accfg:#fff; --chipbg:#2c2c2e; --chipfg:#d1d1d6; --press:rgba(255,255,255,.06);
+  --avabg:#3a3a3c; --navbg:transparent; --navfg:#fff; --indicator:#fff; --panelbg:rgba(28,28,30,.97); --chatbg:#000;
+  --bubMe:#0a84ff; --bubMeText:#fff; --bubThem:#26252a; --bubThemText:#fff; --sysbg:#1c1c1e; --photobg:#000; --icr:14px;
+}
+:where(#nn-wrap) *,:where(#nn-wrap) *::before,:where(#nn-wrap) *::after{box-sizing:border-box;margin:0;padding:0}
+#nn-wrap{display:flex;justify-content:center;padding:12px 0;color:var(--text);font-family:var(--font);-webkit-font-smoothing:antialiased;line-height:normal;text-align:left}
+:where(#nn-wrap) button{font:inherit;color:inherit;background:none;border:0;margin:0}
+:where(#nn-wrap) input{font:inherit;color:inherit}
+.tap,[data-act]{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+[data-act]{transition:transform .12s ease,background-color .15s ease,opacity .15s ease}
+[data-act]:active{transform:scale(.96);opacity:.82}
+
+/* ===== 기기 프레임 ===== */
+#nn-phone{position:relative;container-type:inline-size;width:min(86vw,330px);height:min(calc(min(86vw,330px) * 1.9),78vh);min-height:470px;border-radius:30px;--ir:30px;overflow:hidden;overflow:clip;background:var(--frame);isolation:isolate}
+@media (min-width:520px){
+  #nn-phone{--ir:33px;width:350px;height:min(700px,88vh);border-radius:42px;border:9px solid var(--frame);background:var(--frame);
+    box-shadow:0 0 0 2px #3a3a3c,0 30px 70px rgba(0,0,0,.55)}
+}
+.glass{position:absolute;inset:0;overflow:hidden;border-radius:var(--ir,0px);clip-path:inset(0 round var(--ir,0px));-webkit-clip-path:inset(0 round var(--ir,0px));isolation:isolate;transform:translateZ(0)}
+.screen,#nn-xLock,.backdrop{border-radius:var(--ir,0px)}
+#nn-xNav{border-radius:0 0 var(--ir,0px) var(--ir,0px)}
+.wall{border-radius:var(--ir,0px)}
+
+/* ===== 상태 표시줄 ===== */
+#nn-xStatus{position:absolute;top:0;left:0;right:0;height:var(--sb);z-index:90;display:flex;align-items:center;justify-content:space-between;padding:4px 22px 0 30px;font-size:14px;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.3)}
+#nn-xStatus.dark{color:var(--text);text-shadow:none}
+#nn-xStatus .sb-ic{display:flex;align-items:center;gap:6px;pointer-events:none}
+#nn-xStatus svg{width:16px;height:16px;fill:currentColor}
+#nn-xStatus .bat{display:flex;align-items:center;gap:4px;font-size:12px}
+#nn-xStatus .batbox{position:relative;width:25px;height:12px;border:1.5px solid currentColor;border-radius:4px;opacity:.95}
+#nn-xStatus .batbox i{position:absolute;left:1.5px;top:1.5px;bottom:1.5px;background:currentColor;border-radius:1.5px}
+#nn-xStatus .batbox.low i{background:var(--red)}
+#nn-xStatus .batbox:after{content:"";position:absolute;right:-4px;top:3px;width:2px;height:4px;background:currentColor;border-radius:0 1px 1px 0}
+#nn-xStatus .lowtxt{color:var(--red)}
+#nn-xClock{pointer-events:none}
+.island{position:absolute;top:10px;left:50%;width:108px;height:30px;margin-left:-54px;border-radius:18px;background:#000;z-index:91;pointer-events:none}
+.punch{position:absolute;top:13px;left:50%;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:#050505;z-index:91;pointer-events:none}
+
+/* ===== 하단 바 ===== */
+#nn-xNav{position:absolute;left:0;right:0;bottom:0;height:var(--nb);z-index:70;display:flex;justify-content:space-around;align-items:center}
+#nn-xNav.android{background:var(--navbg);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+#nn-xNav.android button{width:64px;height:46px;display:flex;align-items:center;justify-content:center;border-radius:14px;color:var(--navfg)}
+#nn-xNav.android svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#nn-xNav.ios{background:transparent;pointer-events:none}
+#nn-xNav.ios button{pointer-events:auto;width:170px;height:30px;display:flex;align-items:center;justify-content:center}
+#nn-xNav.ios button i{width:134px;height:5px;border-radius:3px;background:var(--indicator)}
+
+/* ===== 화면 ===== */
+#nn-xScreens{position:absolute;inset:0;z-index:1;overflow:hidden;overflow:clip}
+.screen{position:absolute;inset:0;padding:var(--sb) 0 var(--nb);display:flex;flex-direction:column;background:var(--bg);color:var(--text);
+  opacity:0;visibility:hidden;pointer-events:none;transform:translateX(26px);
+  transition:opacity .22s ease,transform .26s cubic-bezier(.2,.8,.2,1),visibility 0s linear .26s}
+.screen.active{opacity:1;visibility:visible;pointer-events:auto;transform:none;transition:opacity .22s ease,transform .26s cubic-bezier(.2,.8,.2,1),visibility 0s}
+.screen.overlay{background:transparent;transform:scale(.97)}
+.screen.overlay.active{transform:none}
+.appbar{flex:0 0 auto;min-height:52px;display:flex;align-items:center;gap:2px;padding:0 6px;border-bottom:1px solid var(--line);background:var(--bar)}
+.appbar .ttl{flex:1;min-width:0;font-size:17px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.appbar .ttl small{display:block;font-size:11px;font-weight:500;color:var(--sub);margin-top:1px;overflow:hidden;text-overflow:ellipsis}
+.back{display:flex;align-items:center;gap:0;min-width:44px;height:44px;padding:0 8px 0 2px;border-radius:12px;color:var(--acc);font-size:16px}
+.back svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.ibtn{width:44px;height:44px;min-width:44px;display:flex;align-items:center;justify-content:center;border-radius:50%;color:var(--acc)}
+.ibtn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.content{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.content::-webkit-scrollbar{width:0}
+.sec{padding:16px 16px 6px;font-size:12px;font-weight:700;color:var(--sub);letter-spacing:.02em}
+.row{display:flex;align-items:center;gap:12px;min-height:58px;padding:9px 16px;width:100%;text-align:left;border-bottom:1px solid var(--line2)}
+.row:active{background:var(--press)}
+.row .mid{flex:1;min-width:0}
+.row .t1{font-size:15px;font-weight:600;line-height:1.35;word-break:keep-all;overflow-wrap:anywhere}
+.row .t2{display:block;font-size:12.5px;color:var(--sub);margin-top:2px;line-height:1.45;overflow-wrap:anywhere;word-break:keep-all}
+.row .t2.one{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .r{flex:0 0 auto;font-size:11.5px;color:var(--sub);text-align:right;max-width:34%;line-height:1.5}
+.ava{position:relative;flex:0 0 auto;width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:21px;background:var(--avabg);color:var(--text);overflow:hidden}
+.badge{display:inline-flex;align-items:center;justify-content:center;min-width:19px;height:19px;padding:0 5px;border-radius:10px;background:var(--red);color:#fff;font-size:11px;font-weight:700;line-height:1}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;font-size:11.5px;background:var(--chipbg);color:var(--chipfg)}
+.card{margin:10px 14px;padding:14px;border-radius:16px;background:var(--card);border:1px solid var(--line)}
+.empty{padding:24px 20px;text-align:center;color:var(--sub);font-size:13px;line-height:1.6;word-break:keep-all}
+.tabs{flex:0 0 auto;display:flex;border-bottom:1px solid var(--line);background:var(--bar)}
+.tabs button{flex:1;min-height:44px;font-size:14px;font-weight:600;color:var(--sub);border-bottom:2px solid transparent}
+.tabs button.on{color:var(--acc);border-color:var(--acc)}
+.pane{display:none}.pane.on{display:block}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line2);font-size:13.5px}
+.kv:last-child{border-bottom:0}
+.kv span:first-child{color:var(--sub);flex:0 0 auto;max-width:40%}
+.kv span:last-child{text-align:right;overflow-wrap:anywhere;word-break:keep-all}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 16px;border-radius:14px;background:var(--acc);color:var(--accfg);font-size:14px;font-weight:700}
+.btn.ghost{background:var(--chipbg);color:var(--text)}
+.btn.full{width:100%}
+.bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;background:var(--acc)}
+.note-s{font-size:11.5px;color:var(--sub);margin-top:4px;line-height:1.5;word-break:keep-all}
+
+/* ===== 사진 아트 (CSS로 그린 사진) ===== */
+.art{position:relative;overflow:hidden}
+.art .em{position:absolute;transform:translate(-50%,-50%);line-height:1;filter:drop-shadow(0 3px 6px rgba(0,0,0,.18))}
+.art.gray{filter:grayscale(1)}
+.art.soft:after{content:"";position:absolute;inset:0;backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);background:rgba(20,10,20,.18);pointer-events:none}
+.art.shake .em{filter:blur(1.5px)}
+
+/* ===== 잠금화면 ===== */
+#nn-xLock{position:absolute;inset:0;z-index:80;display:flex;flex-direction:column;align-items:center;transition:opacity .35s ease,visibility 0s linear 0s;overflow:hidden}
+#nn-xLock.hidden{opacity:0;visibility:hidden;pointer-events:none;transition:opacity .35s ease,visibility 0s linear .35s}
+#nn-xLock .lart{position:absolute;inset:0;pointer-events:none}
+#nn-xLock .lk-clock{position:relative;z-index:2;margin-top:calc(var(--sb) + 18px);text-align:center;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.35);pointer-events:none}
+#nn-xLock .lk-clock span{display:block;font-size:15px;font-weight:600}
+#nn-xLock .lk-clock b{display:block;font-size:clamp(60px,21cqw,86px);font-weight:600;letter-spacing:-2px;line-height:1.05}
+#nn-xLock.ios .lk-clock b{font-weight:700}
+#nn-xLock .tapzone{position:absolute;inset:0;z-index:1}
+#nn-xLock .tapzone:active{transform:none;opacity:1}
+.lk-bottom{position:relative;z-index:3;margin-top:auto;margin-bottom:calc(var(--nb) + 12px);display:flex;flex-direction:column;align-items:center;gap:8px;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.5);font-size:13px;font-weight:600;padding:0 16px;text-align:center}
+.unlockbtn{display:flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 20px;border-radius:24px;background:rgba(255,255,255,.18);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.3);color:#fff}
+.lk-cap{position:relative;z-index:3;margin-top:10px;max-width:86%;padding:5px 12px;border-radius:12px;background:rgba(0,0,0,.28);color:#fff;font-size:11.5px;line-height:1.45;text-align:center;word-break:keep-all;pointer-events:none}
+
+/* ===== 홈 ===== */
+#nn-xHome{background:#000}
+#nn-xHome .wall{position:absolute;inset:0;pointer-events:none;z-index:0}
+#nn-xHome .wall:after,#nn-xLock .lart:after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;background:linear-gradient(180deg,rgba(0,0,0,.34),rgba(0,0,0,.08) 22%,rgba(0,0,0,0) 40%,rgba(0,0,0,0) 72%,rgba(0,0,0,.28))}
+#nn-xPages{position:relative;z-index:1;flex:1;min-height:0;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+#nn-xPages::-webkit-scrollbar{display:none}
+.hpage{flex:0 0 100%;width:100%;scroll-snap-align:start;padding:12px 14px 6px;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;gap:12px}
+.hpage::-webkit-scrollbar{width:0}
+.wgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.widget{position:relative;border-radius:22px;padding:14px;min-height:96px;text-align:left;color:#fff;background:rgba(30,30,34,.38);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.14);overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;text-shadow:0 1px 3px rgba(0,0,0,.25)}
+.widget.wide{grid-column:1/-1}
+.widget .w1{font-size:12px;font-weight:600;opacity:.9}
+.widget .w2{font-size:clamp(24px,8cqw,34px);font-weight:600;line-height:1.05;letter-spacing:-.5px}
+.widget .w3{font-size:12px;opacity:.88;line-height:1.4;word-break:keep-all}
+.widget.photo{padding:0;min-height:140px}
+.widget.photo .art{position:absolute;inset:0}
+.widget.photo .w3{position:absolute;left:10px;right:10px;bottom:8px}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px 4px;align-content:start}
+.app{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;min-height:80px;padding-top:2px}
+.app .lbl{font-size:11px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.7);max-width:100%;padding:0 2px;text-align:center;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ic{position:relative;width:58px;height:58px;border-radius:var(--icr);display:flex;align-items:center;justify-content:center;background:var(--c,#fff);color:var(--fc,#111);font-weight:800;font-size:16px;letter-spacing:-.4px;box-shadow:0 3px 8px rgba(0,0,0,.18)}
+.ic .e{font-size:28px;line-height:1}
+.ic .badge{position:absolute;top:-5px;right:-7px;z-index:2}
+.fold{background:rgba(255,255,255,.22);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:8px}
+.fold .mini{width:100%;aspect-ratio:1;border-radius:5px;font-size:9px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--c,#fff)}
+.dots{position:relative;z-index:1;display:flex;justify-content:center;gap:0;padding:0}
+.dots button{width:26px;height:26px;display:flex;align-items:center;justify-content:center}
+.dots button i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.45);transition:all .2s}
+.dots button.on i{background:#fff}
+.dock{position:relative;z-index:1;margin:2px 10px 8px;padding:10px 8px;border-radius:30px;background:rgba(255,255,255,.18);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);display:grid;grid-template-columns:repeat(4,1fr);justify-items:center}
+.dock .app{min-height:60px}
+.dock .lbl{display:none}
+
+/* ===== 오버레이 ===== */
+.backdrop{position:absolute;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.backdrop:active{transform:none!important;opacity:1!important}
+.ov-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;position:relative;pointer-events:none}
+.ov-box{pointer-events:auto;position:relative;margin:auto 16px;padding:18px 12px 12px;border-radius:30px;background:rgba(60,60,66,.55);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.12);max-height:82%;overflow-y:auto;color:#fff}
+.ov-box h3{text-align:center;font-size:19px;font-weight:600;margin-bottom:14px}
+.panel-box{position:relative;margin:0 10px;padding:16px;border-radius:0 0 28px 28px;background:var(--panelbg);color:var(--text);border:1px solid var(--line);border-top:0;max-height:calc(100% - 12px);overflow-y:auto}
+.qs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.tog{display:flex;flex-direction:column;align-items:center;gap:5px;min-height:74px;font-size:11px;color:var(--sub);text-align:center;line-height:1.25}
+.tog .ti{width:50px;height:50px;border-radius:50%;background:var(--chipbg);display:flex;align-items:center;justify-content:center;font-size:19px}
+.tog.on .ti{background:var(--acc);color:var(--accfg)}
+.tog.on{color:var(--text);font-weight:600}
+
+/* ===== 토스트 ===== */
+#nn-xToasts{position:absolute;left:12px;right:12px;bottom:calc(var(--nb) + 12px);z-index:95;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+.toast{max-width:100%;padding:10px 16px;border-radius:16px;background:rgba(30,30,34,.94);color:#fff;font-size:13px;line-height:1.5;box-shadow:0 8px 24px rgba(0,0,0,.3);animation:tin .25s ease both;word-break:keep-all;overflow-wrap:anywhere}
+.toast.out{animation:tout .3s ease forwards}
+@keyframes tin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes tout{to{opacity:0;transform:translateY(8px)}}
+
+/* ===== 채팅 ===== */
+.chatwrap{background:var(--chatbg)}
+#nn-xChatBody{padding:10px 10px 12px;background:var(--chatbg)}
+.msg{display:flex;gap:7px;margin:3px 0;align-items:flex-end}
+.msg.me{justify-content:flex-end}
+.msg .av{flex:0 0 32px;width:32px;height:32px;font-size:15px;align-self:flex-end}
+.msg .av.ghost{visibility:hidden}
+.msg .col{display:flex;flex-direction:column;max-width:76%;min-width:0}
+.msg.me .col{align-items:flex-end}
+.msg .nm{font-size:11.5px;color:var(--sub);margin:2px 0 3px 4px}
+.bub{padding:8px 12px;border-radius:18px;font-size:14.5px;line-height:1.42;background:var(--bubThem);color:var(--bubThemText);word-break:keep-all;overflow-wrap:anywhere;white-space:pre-wrap}
+.msg.me .bub{background:var(--bubMe);color:var(--bubMeText)}
+.msg .tm{font-size:10.5px;color:var(--sub);margin:2px 4px 0}
+.sys{margin:12px auto;width:fit-content;max-width:90%;padding:4px 12px;border-radius:999px;background:var(--sysbg);color:var(--sub);font-size:11.5px;text-align:center;word-break:keep-all}
+.stk{font-size:56px;line-height:1;padding:2px;text-align:center}
+.stk small{display:block;font-size:10.5px;color:var(--sub);margin-top:3px;max-width:150px;word-break:keep-all}
+.pbub{width:180px;max-width:100%;border-radius:16px;overflow:hidden;background:var(--card)}
+.pbub .art{height:130px}
+.pbub small{display:block;padding:6px 9px 8px;font-size:11.5px;color:var(--sub);line-height:1.4;word-break:keep-all}
+.voice{display:flex;align-items:center;gap:8px;min-width:140px}
+.voice .pl{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.85);color:#222;display:flex;align-items:center;justify-content:center;font-size:10px}
+.voice .eq{display:flex;gap:2px;align-items:center;height:18px}
+.voice .eq i{width:3px;height:6px;border-radius:2px;background:currentColor;opacity:.7}
+.voice.playing .eq i{animation:eq .5s ease-in-out infinite alternate}
+.voice.playing .eq i:nth-child(2n){animation-delay:.12s}
+@keyframes eq{to{height:18px}}
+.file{display:flex;align-items:center;gap:10px;min-width:160px}
+.file .fi{width:36px;height:36px;border-radius:9px;background:rgba(255,255,255,.6);display:flex;align-items:center;justify-content:center;font-size:18px}
+.chatbar{flex:0 0 auto;display:flex;align-items:center;gap:6px;padding:6px 8px;background:var(--bar);border-top:1px solid var(--line)}
+.chatbar .fake{flex:1;min-height:38px;border-radius:19px;border:1px solid var(--line);color:var(--sub);font-size:13.5px;display:flex;align-items:center;padding:0 14px}
+.emodrawer{flex:0 0 auto;display:none;padding:8px 10px 10px;background:var(--bar);border-top:1px solid var(--line)}
+.emodrawer.on{display:block}
+.emodrawer .eg{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.emodrawer button{min-height:44px;font-size:25px;border-radius:12px;background:var(--chipbg)}
+
+/* ===== 갤러리 ===== */
+.albums{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;padding:14px}
+.album{text-align:left;min-width:0}
+.album .art{aspect-ratio:1;border-radius:14px}
+.album .an{font-size:14px;font-weight:600;margin-top:6px;line-height:1.3;overflow-wrap:anywhere;word-break:keep-all}
+.album .ac{font-size:12px;color:var(--sub);line-height:1.35;word-break:keep-all}
+.thumbs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px;padding:2px}
+.thumb{position:relative;aspect-ratio:1;overflow:hidden;display:block}
+.thumb .art{position:absolute;inset:0}
+.thumb .cap{position:absolute;left:0;right:0;bottom:0;padding:14px 5px 4px;font-size:10px;line-height:1.25;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.6));text-align:left;z-index:2;word-break:keep-all}
+.tag{position:absolute;top:5px;right:5px;z-index:2;font-size:9px;font-weight:700;color:#fff;background:rgba(0,0,0,.45);padding:1px 5px;border-radius:6px}
+.fav{position:absolute;bottom:4px;right:5px;z-index:3;font-size:11px}
+.thumb.more{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:var(--card);color:var(--sub);font-size:11.5px;text-align:center;padding:4px}
+.photo-view{flex:1;min-height:0;display:flex;flex-direction:column;background:var(--photobg)}
+.photo-art{flex:1;min-height:170px;margin:10px;border-radius:18px}
+.photo-meta{padding:2px 18px 6px;overflow-y:auto;max-height:34%}
+.photo-meta h4{font-size:16px;margin-bottom:6px;overflow-wrap:anywhere}
+.photo-meta p{font-size:13.5px;color:var(--sub);line-height:1.6;overflow-wrap:anywhere;word-break:keep-all}
+.photo-nav{display:flex;justify-content:space-between;align-items:center;padding:6px 12px 8px}
+.pbtn{min-width:84px;min-height:44px;padding:0 14px;border-radius:22px;background:var(--chipbg);font-size:13px;font-weight:600}
+.pbtn[disabled]{opacity:.35;pointer-events:none}
+.lockbox{display:flex;flex-direction:column;align-items:center;gap:14px;padding:56px 24px;text-align:center;color:var(--sub);font-size:13px;line-height:1.6}
+.faceid{width:76px;height:76px;border-radius:22px;display:flex;align-items:center;justify-content:center;background:var(--chipbg);color:var(--acc);font-size:34px}
+
+/* ===== 기타 ===== */
+.notebody{padding:18px 20px;font-size:15.5px;line-height:1.75;word-break:keep-all;overflow-wrap:anywhere}
+.notebody h2{font-size:21px;margin-bottom:10px}
+.notebody li{list-style:none;padding:7px 0;border-bottom:1px dashed var(--line)}
+.searchbar{display:flex;align-items:center;gap:8px;margin:12px 14px;padding:0 6px 0 14px;border-radius:14px;background:var(--chipbg);min-height:44px}
+.searchbar input{flex:1;min-width:0;background:none;border:0;outline:0;font-size:15px;height:42px;color:var(--text)}
+.alarmrow{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line2)}
+.alarmrow .mid{flex:1;min-width:0}
+.alarmrow .at{font-size:34px;font-weight:300;letter-spacing:-1px;line-height:1.1}
+.alarmrow.off .at,.alarmrow.off .t2{opacity:.4}
+.sw{position:relative;flex:0 0 auto;width:52px;height:32px;border-radius:16px;background:var(--line);transition:background .2s}
+.sw:after{content:"";position:absolute;top:2px;left:2px;width:28px;height:28px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:left .2s}
+.sw.on{background:var(--green)}
+.sw.on:after{left:22px}
+.swbtn{display:flex;align-items:center;justify-content:center;min-width:56px;min-height:44px}
+.nowplay{display:flex;flex-direction:column;align-items:center;padding:18px 16px 8px;text-align:center}
+.nowplay .art{width:170px;height:170px;border-radius:14px;margin-bottom:12px}
+.nowplay h3{font-size:18px;overflow-wrap:anywhere}
+.nowplay p{font-size:13px;color:var(--sub);margin-top:3px}
+.ctrls{display:flex;gap:14px;justify-content:center;margin:12px 0 4px}
+.ctrls button{width:52px;height:52px;border-radius:50%;background:var(--chipbg);font-size:18px}
+.ctrls button.main{width:62px;height:62px;background:var(--acc);color:var(--accfg);font-size:22px}
+.viewfinder{flex:1;min-height:0;margin:10px;border-radius:18px;position:relative;overflow:hidden;background:radial-gradient(60% 50% at 50% 45%,#5b6168,#25282c 70%,#111)}
+.viewfinder .g3{position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,transparent 33%,rgba(255,255,255,.35) 33.3%,transparent 33.6%,transparent 66.3%,rgba(255,255,255,.35) 66.6%,transparent 67%),linear-gradient(180deg,transparent 33%,rgba(255,255,255,.35) 33.3%,transparent 33.6%,transparent 66.3%,rgba(255,255,255,.35) 66.6%,transparent 67%)}
+.viewfinder .fl{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
+.viewfinder .fl.go{animation:fl .35s ease}
+@keyframes fl{0%{opacity:.95}100%{opacity:0}}
+.shutter{width:70px;height:70px;border-radius:50%;background:#fff;box-shadow:0 0 0 5px rgba(255,255,255,.35);margin:6px auto 10px;display:block}
+.prof{position:relative;flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding:24px 20px 26px;text-align:center;color:#fff}
+.prof .art{position:absolute;inset:0}
+.prof .pv{position:relative;width:96px;height:96px;font-size:44px;margin-bottom:12px;border:3px solid rgba(255,255,255,.7)}
+.prof h2{position:relative;font-size:20px;text-shadow:0 1px 4px rgba(0,0,0,.4)}
+.prof p{position:relative;font-size:13.5px;margin-top:6px;min-height:18px;text-shadow:0 1px 4px rgba(0,0,0,.4);word-break:keep-all}
+.prof .acts{position:relative;display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;justify-content:center}
+.headcard{display:flex;align-items:center;gap:12px}
+.headcard .hi{flex:0 0 auto;width:54px;height:54px;border-radius:var(--icr);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800}
+.headcard b{display:block;font-size:16px}
+.headcard span{display:block;font-size:12.5px;color:var(--sub);line-height:1.5;margin-top:2px;word-break:keep-all}
+@container (max-width:345px){
+  .ic{width:52px;height:52px}
+  .grid{gap:10px 2px}
+  .row{padding:9px 12px}
+  .tog .ti{width:44px;height:44px}
+  #nn-xStatus{padding:4px 16px 0 22px}
+  .island{width:92px;margin-left:-46px}
+}
+@container (max-width:300px){
+  #nn-xStatus{font-size:12.5px;padding:4px 12px 0 18px}
+  #nn-xStatus .opt{display:none}
+  .ic{width:46px;height:46px}
+  .ic .e{font-size:24px}
+  .island{width:76px;margin-left:-38px;height:26px}
+}
+
+</style>
+<div id="nn-phone"><div class="glass">
+  <div id="nn-xStatus" data-act="panel" role="button" aria-label="제어 센터 열기">
+    <span id="nn-xClock">--:--</span>
+    <div class="sb-ic" id="nn-xSbIcons"></div>
+  </div>
+  <div class="island"></div>
+
+  <div id="nn-xScreens">
+    <section class="screen active" id="nn-xHome">
+      <div class="wall" id="nn-xWall"></div>
+      <div id="nn-xPages"></div>
+      <div class="dots" id="nn-xDots"></div>
+      <div class="dock" id="nn-xDock"></div>
+    </section>
+
+    <section class="screen overlay" id="nn-s-folder">
+      <div class="backdrop" data-act="back"></div>
+      <div class="ov-wrap"><div class="ov-box"><h3 id="nn-xFolderTitle"></h3><div class="grid" id="nn-xFolderGrid"></div></div></div>
+    </section>
+
+    <section class="screen overlay" id="nn-s-panel" style="padding-top:var(--sb)">
+      <div class="backdrop" data-act="back"></div>
+      <div class="panel-box" id="nn-xPanel"></div>
+    </section>
+
+    <section class="screen overlay" id="nn-s-recents">
+      <div class="backdrop" data-act="back"></div>
+      <div class="ov-wrap"><div class="ov-box"><h3>최근 앱</h3><div id="nn-xRecent"></div><button class="btn full" data-act="clearrecent" type="button" style="margin-top:8px">모두 닫기</button></div></div>
+    </section>
+
+    <section class="screen" id="nn-s-device"><div class="appbar" id="nn-xBarDevice"></div><div class="content" id="nn-xDevice"></div></section>
+
+    <section class="screen" id="nn-s-phone">
+      <div class="appbar" id="nn-xBarPhone"></div>
+      <div class="tabs">
+        <button class="on" data-act="tab" data-group="ph" data-tab="recent" type="button">최근 기록</button>
+        <button data-act="tab" data-group="ph" data-tab="contacts" type="button">연락처</button>
+      </div>
+      <div class="content">
+        <div class="pane on" data-group="ph" data-pane="recent" id="nn-xCalls"></div>
+        <div class="pane" data-group="ph" data-pane="contacts" id="nn-xContacts"></div>
+      </div>
+    </section>
+    <section class="screen" id="nn-s-calldetail"><div class="appbar" id="nn-xBarCd"></div><div class="content" id="nn-xCd"></div></section>
+
+    <section class="screen" id="nn-s-chats"><div class="appbar" id="nn-xBarChats"></div><div class="content" id="nn-xChats"></div></section>
+    <section class="screen chatwrap" id="nn-s-chat">
+      <div class="appbar" id="nn-xBarChat"></div>
+      <div class="content" id="nn-xChatBody"></div>
+      <div class="emodrawer" id="nn-xEmo"><div class="note-s" style="margin:0 0 6px">자주 쓰는 이모티콘</div><div class="eg" id="nn-xEmoGrid"></div></div>
+      <div class="chatbar"><button class="ibtn" data-act="emotoggle" aria-label="이모티콘" type="button" style="font-size:21px">☺</button><div class="fake">메시지</div><button class="ibtn" data-act="sendfake" aria-label="보내기" type="button"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></div>
+    </section>
+    <section class="screen" id="nn-s-profile"><div class="appbar" id="nn-xBarProf" style="background:transparent;border:0;position:relative;z-index:2"></div><div class="prof" id="nn-xProf"></div></section>
+
+    <section class="screen" id="nn-s-gallery"><div class="appbar" id="nn-xBarGal"></div><div class="content" id="nn-xGal"></div></section>
+    <section class="screen" id="nn-s-album"><div class="appbar" id="nn-xBarAlb"></div><div class="content" id="nn-xAlb"></div></section>
+    <section class="screen" id="nn-s-subalbum"><div class="appbar" id="nn-xBarSub"></div><div class="content" id="nn-xSub"></div></section>
+    <section class="screen" id="nn-s-photo">
+      <div class="appbar" id="nn-xBarPhoto"></div>
+      <div class="photo-view">
+        <div class="photo-art art" id="nn-xPhotoArt"></div>
+        <div class="photo-meta"><h4 id="nn-xPhotoCap"></h4><p id="nn-xPhotoDesc"></p></div>
+        <div class="photo-nav"><button class="pbtn" data-act="photonav" data-d="-1" id="nn-xPrev" type="button">‹ 이전</button><span id="nn-xPhotoIdx" style="font-size:12px;color:var(--sub)"></span><button class="pbtn" data-act="photonav" data-d="1" id="nn-xNext" type="button">다음 ›</button></div>
+      </div>
+    </section>
+
+    <section class="screen" id="nn-s-notes"><div class="appbar" id="nn-xBarNotes"></div><div class="content" id="nn-xNotes"></div></section>
+    <section class="screen" id="nn-s-note"><div class="appbar" id="nn-xBarNote"></div><div class="content"><div class="notebody" id="nn-xNote"></div></div></section>
+    <section class="screen" id="nn-s-browser"><div class="appbar" id="nn-xBarBrowser"></div><div class="content" id="nn-xBrowser"></div></section>
+    <section class="screen" id="nn-s-alarm"><div class="appbar" id="nn-xBarAlarm"></div><div class="content" id="nn-xAlarm"></div></section>
+    <section class="screen" id="nn-s-music"><div class="appbar" id="nn-xBarMusic"></div><div class="content" id="nn-xMusic"></div></section>
+    <section class="screen" id="nn-s-camera" style="background:#000;color:#fff">
+      <div class="appbar" id="nn-xBarCam" style="background:#000;border-color:#111"></div>
+      <div class="viewfinder"><div class="g3"></div><div class="fl" id="nn-xFlash"></div></div>
+      <button class="shutter" data-act="shutter" aria-label="촬영" type="button"></button>
+    </section>
+    <section class="screen" id="nn-s-list"><div class="appbar" id="nn-xBarList"></div><div class="content" id="nn-xList"></div></section>
+  </div>
+
+  <div id="nn-xLock">
+    <div class="lart art" id="nn-xLockArt"></div>
+    <div class="tapzone" data-act="locktap"></div>
+    <div class="lk-clock"><span id="nn-xLkDate"></span><b id="nn-xLkTime">--:--</b></div>
+    <div class="lk-bottom"><span id="nn-xLkHint"></span><button class="unlockbtn" data-act="unlock" type="button" id="nn-xUnlockBtn"></button></div>
+  </div>
+
+  <nav id="nn-xNav"></nav>
+  <div id="nn-xToasts"></div>
+</div></div>
+
+<script>
+(function(){
+"use strict";
+var P = {"title": "나인의 iPhone 15 Pro Max", "os": "ios", "dark": true, "status": {"batteryRange": [18, 23], "dnd": true, "net": "5G"}, "lock": {"art": {"g": "bath", "em": [["🪥", 30, 64, 46, -25], ["🫧", 60, 68, 40], ["😒", 50, 50, 120], ["🖤", 50, 84, 70]]}, "tap": "📷 노팅힐 플랫 욕실 세면대 앞, 입가에 치약 거품을 묻히고 나인의 검은색 오버핏 후드티를 입은 채 눈을 흘기는 로미 (초근접 도촬)", "button": "위로 쓸어올려 열기"}, "home": {"wall": {"g": "black"}, "dock": ["phone", "messages", "camera", "spotify"], "pages": [{"items": ["deliveroo", "ubereats", "coutts", "telemetry", "papago", "instagram", "safari", "photos", "notes", "clock"]}]}, "folders": {}, "emoji": ["🐱", "🖤", "🍼", "🥐", "🏎️", "🤷‍♂️"], "sendTip": "보낼 말 고르는 중… 🤷‍♂️", "apps": {"phone": {"n": "전화", "type": "phone", "i": {"bg": "#34c759", "fg": "#fff", "e": "📞"}, "badge": "6", "summary": "부재중 0건 · 로미 전화는 서킷 피트레인에 있지 않은 이상 무조건 받음", "calls": [{"n": "Inspector Summers 🐱🖤", "ava": "🐱", "k": "out", "d": "14분", "w": "4분 전"}, {"n": "Inspector Summers 🐱🖤", "ava": "🐱", "k": "out", "count": "3", "w": "어제", "note": "어제 발신 3회"}, {"n": "Inspector Summers 🐱🖤", "ava": "🐱", "k": "in", "count": "4", "w": "어제", "note": "어제 수신 4회"}, {"n": "Oliver", "ava": "O", "k": "miss", "count": "6", "w": "최근", "note": "레이븐 단장 · 부재중 6건"}, {"n": "Oliver", "ava": "O", "k": "call", "d": "42초", "w": "최근", "note": "\"Get to the point. I'm busy.\" (용건만 해. 바빠.)"}, {"n": "Cynthia", "ava": "C", "k": "in", "d": "1분 12초", "w": "최근", "note": "\"Mess with my bike's throttle map and I'm releasing that video of Theo's puppy ears in the paddock.\" (내 바이크 스로틀 맵에 장난치면 테오 강아지 귀 영상 패독에 푼다.)"}, {"n": "Mark", "ava": "M", "k": "out", "d": "28초", "w": "최근", "note": "\"Wire the fifty quid to my account.\" (50파운드 계좌로 쏴라.)"}], "contacts": [{"n": "Inspector Summers 🐱🖤", "ava": "🐱", "s": "로미 · 방해금지 우회", "chat": "romy"}, {"n": "Oliver", "ava": "O", "s": "레이븐 단장 · 긴급 우회 허용"}, {"n": "레이븐 팀 차고 비상 연락망", "ava": "🏁", "s": "방해금지 예외"}, {"n": "Cynthia", "ava": "C", "s": "레이븐 엔지니어"}, {"n": "Mark", "ava": "M", "s": "크루치프", "chat": "mark"}, {"n": "Charlotte (Mum)", "ava": "C", "s": "Charlotte Summers · 아직 통화 기록 없음, 연락처에 단정하게 추가만 되어 있음"}]}, "messages": {"n": "메시지", "type": "chat", "i": {"bg": "#34c759", "fg": "#fff", "e": "💬"}, "badge": "342", "chats": [{"key": "romy", "title": "Romy 🐱🖤", "ava": "🐱", "g": "steel", "pinned": true, "when": "방금", "preview": "(스티커) 앙칼진 회색 고양이 솜방망이 펀치", "msgs": [{"sys": "오늘"}, {"me": 1, "t": "Harrods box is in the boot. I'll be there in 15 minutes, so come down carefully and don't crease your slacks.\n(해러즈 상자 트렁크에 실었어. 15분 뒤에 도착하니까 슬랙스 구겨지지 않게 조심해서 내려와.)"}, {"t": "Did you bring Sunny's car seat belt? Mum says mind the hydrangea bed!\n(써니 카시트 벨트 챙겼지? 우리 엄마가 수국 화단 조심하래!)"}, {"me": 1, "t": "I've heard a thousand times that the hydrangeas matter more than the Porsche's front bumper, Inspector Summers.\n(포르쉐 앞범퍼 긁히는 것보다 수국이 더 소중하다는 거 귀에 딱지 앉게 들었거든, 서머스 경감님.)"}, {"kind": "sticker", "e": "😾👊", "cap": "앙칼진 회색 고양이 솜방망이 펀치"}], "profile": {"status": "", "bg": {"g": "steel", "em": [["🐱", 50, 40, 90]]}}}, {"key": "raven", "title": "Raven MO1 Operations", "ava": "🏁", "g": "night", "muted": true, "unread": "342", "when": "", "preview": "안 읽은 메시지 342개", "msgs": [{"sys": "단체방 · 알림 꺼짐"}, {"sys": "안 읽은 메시지 342개"}]}, {"key": "mark", "title": "Mark", "ava": "M", "g": "mono", "when": "어제", "preview": "Sent the bet money, you ruthless bastard.", "msgs": [{"t": "Sent the bet money, you ruthless bastard.\n(내기 돈 보냈다 이 지독한 놈아.)"}, {"sys": "읽음 표시만 뜸"}]}]}, "camera": {"n": "카메라", "type": "camera", "i": {"bg": "#3a3a3c", "fg": "#fff", "e": "📷"}}, "spotify": {"n": "Spotify", "type": "music", "i": {"bg": "#1db954", "fg": "#000", "e": "♫"}, "g": "night", "label": "최근 재생", "tracks": [{"t": "Warm on a Cold Night", "a": "Honne"}, {"t": "Sweet", "a": "Cigarettes After Sex"}, {"t": "Champagne Supernova", "a": "Oasis"}]}, "deliveroo": {"n": "Deliveroo", "type": "list", "i": {"bg": "#00ccbc", "fg": "#fff", "e": "🛵"}, "head": {"title": "Deliveroo", "sub": "배달 주소지: 노팅힐 플랫 (W11) 기본 설정"}, "sections": [{"h": "최근 주문 내역", "rows": [{"e": "🥐", "t": "해러즈 푸드홀 베이커리", "s": "최근 주문", "g": "cream"}, {"e": "🥩", "t": "무후추 그릴 스테이크", "s": "최근 주문 · 후추 없이", "g": "fire"}, {"e": "☕", "t": "오트 플랫 화이트", "s": "최근 주문", "g": "sand"}]}], "badge": "214"}, "ubereats": {"n": "Uber Eats", "type": "list", "i": {"bg": "#06c167", "fg": "#fff", "e": "🍔"}, "head": {"title": "Uber Eats", "sub": "배달 주소지: 노팅힐 플랫 (W11) 기본 설정"}, "sections": [{"h": "최근 주문 내역 (Deliveroo와 같은 기록)", "rows": [{"e": "🥐", "t": "해러즈 푸드홀 베이커리", "s": "최근 주문", "g": "cream"}, {"e": "🥩", "t": "무후추 그릴 스테이크", "s": "최근 주문 · 후추 없이", "g": "fire"}, {"e": "☕", "t": "오트 플랫 화이트", "s": "최근 주문", "g": "sand"}]}], "badge": "187"}, "coutts": {"n": "Coutts", "type": "list", "i": {"bg": "#1b2a4a", "fg": "#fff", "t": "C"}, "head": {"title": "Coutts · 프라이빗 뱅킹", "sub": "매트 블랙 카드 사용 내역 실시간 알림", "lines": [["청구지 주소", "W11 Notting Hill (최근 변경 완료)"]]}, "sections": [{"h": "알림", "rows": [{"e": "💳", "t": "매트 블랙 카드", "s": "사용 내역 실시간 알림", "g": "black"}, {"e": "🏠", "t": "청구지 주소 변경 완료", "s": "W11 Notting Hill", "g": "steel"}]}], "badge": "503"}, "telemetry": {"n": "Raven Telemetry", "type": "list", "i": {"bg": "#111", "fg": "#ff9f0a", "e": "📈"}, "head": {"title": "레이븐 엔지니어링 전용 텔레메트리 뷰어", "sub": "주행 데이터 분석용"}, "sections": [{"h": "최근 열람", "rows": [{"e": "🛑", "t": "상하이 Q2 · 14번 헤어핀", "s": "제동 압력 그래프", "g": "fire"}]}, {"h": "서킷 데이터", "rows": [{"e": "🇬🇧", "t": "실버스톤"}, {"e": "🇯🇵", "t": "모테기"}, {"e": "🇶🇦", "t": "카타르"}, {"e": "🇨🇳", "t": "상하이"}]}], "foot": "온보드 텔레메트리 주행 영상 400GB 저장 중", "badge": "129"}, "papago": {"n": "Papago", "type": "list", "i": {"bg": "#03cf5d", "fg": "#fff", "e": "🦜"}, "head": {"title": "Papago", "sub": "번역 기록"}, "sections": [{"h": "번역 기록 · 로미가 무심코 뱉은 한국어를 발음대로 서툴게 검색", "rows": [{"e": "🗣️", "t": "밥 먹었어?", "s": "발음대로 검색해 본 흔적"}, {"e": "🗣️", "t": "집에 언제 와", "s": "발음대로 검색해 본 흔적"}, {"e": "🗣️", "t": "안아줘", "s": "발음대로 검색해 본 흔적"}]}], "foot": "이런 검색 흔적이 다수"}, "instagram": {"n": "Instagram", "type": "list", "i": {"bg": "linear-gradient(135deg,#feda75,#d62976 50%,#4f5bd5)", "fg": "#fff", "e": "📸"}, "head": {"title": "개인 비공개 부계정", "sub": "스토리 눈팅 전용", "lines": [["팔로잉", "1명"], ["게시물", "0개"]]}, "sections": [{"h": "팔로잉 (딱 1명)", "rows": [{"e": "🐱", "t": "@romysummers_", "s": "로미의 개인 계정", "g": "steel"}]}, {"h": "공식 계정", "rows": [{"e": "🏍️", "t": "@NINE_official", "s": "올리버와 팀 홍보팀이 관리", "g": "night"}]}], "badge": "486"}, "safari": {"n": "Safari", "type": "browser", "i": {"bg": "#fff", "fg": "#0a84ff", "e": "🧭"}, "searches": [{"q": "영국 어머니 첫인사 선물 추천 디저트"}, {"q": "포르쉐 911 뒷좌석 대형견 카시트 고정법"}, {"q": "스페인 마요르카 안드라치 프라이빗 빌라 렌트"}, {"q": "여자 손목 관절 마사지 방법"}, {"q": "MO1 2026 포인트 스탠딩", "note": "로미가 자기 포인트 외우고 있는지 시험하려고 찾아봄"}], "tabs": {"count": "3개", "list": ["해러즈 온라인 베이커리 픽업 예약 바코드 페이지", "런던 W11 지역 카운실 텍스 온라인 납부 영수증 페이지", "웸블리 라이브 콘서트 티켓팅 사이트"]}}, "notes": {"n": "메모", "type": "notes", "i": {"bg": "#fff", "fg": "#111", "e": "📝"}, "label": "메모", "notes": [{"t": "Things to keep in mind:", "lines": ["샬럿 집 들어갈 때 신발 털기. 수국 화단 2미터 이내 주차 금지.", "로미 음식에 흑후추/백후추 절대 금지 (식당 예약할 때 주방장한테 세 번 말할 것).", "시트콤 4화 당근 언급 시 침대 출입 금지 당함 (주의).", "세인트 모즈 별장 테라스 난간 페인트 새로 칠하기 (로미 기대기 편하게)."]}]}, "clock": {"n": "시계", "type": "alarm", "i": {"bg": "#1c1c1e", "fg": "#fff", "e": "⏰"}, "alarms": [{"t": "06:00", "label": "레이스 주말 전용", "on": false, "note": "비활성화"}, {"t": "10:00", "label": "Wake up Romy", "rep": "매일 반복", "on": true}, {"t": "13:45", "label": "Mum's House Arrival", "rep": "금요일", "on": true}]}, "photos": {"n": "사진", "type": "gallery", "i": {"bg": "#fff", "fg": "#111", "e": "🌼"}, "sub": "본인 셀카 0장", "albums": [{"id": "fav", "n": "즐겨찾기", "count": "4장", "cover": {"g": "navy", "e": "♥"}, "photos": [{"e": "👗", "g": "navy", "t": "메이페어 파티 직전 · 거울 셀카", "d": "로미가 메이페어 파티 가기 직전 보냈던, 등 절반이 파인 네이비 실크 홀터넥 드레스 착장 거울 셀카.", "fav": true, "em": [["🪞", 50, 42, 90], ["👗", 50, 60, 54]]}, {"e": "🏆", "g": "gold", "t": "상하이 포디움 백스테이지", "d": "상하이 포디움 백스테이지에서 로미가 나인의 레이싱 수트 가슴팍을 꼬집으며 웃고 있는 사진.", "fav": true, "em": [["🏆", 34, 40, 54], ["🤏", 62, 58, 50], ["😆", 66, 34, 44]]}, {"e": "🛋️", "g": "cream", "t": "소파 위 투샷", "d": "노팅힐 플랫 소파에서 나인의 회색 후드티에 파묻혀 잠든 로미와, 그 품에 코를 박고 자는 써니의 투샷.", "fav": true, "em": [["🛋️", 50, 64, 80], ["😴", 40, 42, 46], ["🐕", 64, 46, 44]]}, {"e": "🖊️", "g": "mono", "t": "모테기 파파라치 컷", "d": "모테기 서킷 가라지 구석에서 로미가 펜을 들고 멍하니 자기를 쳐다보던 파파라치 컷 스크린샷.", "fav": true, "tag": "스크린샷", "em": [["🖊️", 38, 56, 46], ["👀", 60, 42, 50]]}]}, {"id": "recent", "n": "최근 항목", "count": "온통 로미와 써니", "cover": {"g": "steel", "e": "🐱", "shake": true}, "photos": [{"e": "🐱", "g": "steel", "t": "로미 옆모습 (흔들림)", "d": "온통 흔들린 로미의 옆모습.", "shake": true}, {"e": "🍽️", "g": "sand", "t": "밥 먹는 로미", "d": "밥 먹는 모습."}, {"e": "🥕", "g": "gold", "t": "써니 연사", "d": "써니가 당근 인형 뜯는 연사.", "tag": "연사 200"}, {"e": "🔩", "g": "steel", "t": "바이크 부품 마모 상태", "d": "바이크 부품 마모 상태를 찍은 사진. 본인 사진은 이게 전부."}], "more": "흔들린 로미 사진은 지우지 않고 계속 쌓이는 중", "moreLabel": "더 보기"}, {"id": "burst", "n": "연사", "count": "200장", "cover": {"g": "gold", "e": "🥕"}, "photos": [{"e": "🥕", "g": "gold", "t": "써니 연사 1", "d": "써니가 당근 인형 뜯는 연사 200장 중 한 장.", "shake": true}, {"e": "🐕", "g": "gold", "t": "써니 연사 2", "d": "써니가 당근 인형 뜯는 연사 200장 중 한 장.", "shake": true}], "more": "써니 당근 인형 연사 200장", "moreLabel": "+198"}, {"id": "selfie", "n": "셀피", "count": "0장", "cover": {"g": "black", "e": "∅"}, "photos": [], "foot": "본인 셀카 0장."}, {"id": "bike", "n": "바이크 부품", "count": "몇 장", "cover": {"g": "steel", "e": "⚙️"}, "photos": [{"e": "⚙️", "g": "steel", "t": "부품 마모 1", "d": "바이크 부품 마모 상태."}, {"e": "🔧", "g": "mono", "t": "부품 마모 2", "d": "바이크 부품 마모 상태."}]}]}}, "panel": {"toggles": [["방해금지", "☾", true], ["Wi-Fi", "📶", true], ["Bluetooth", "ᛒ", true], ["비행기", "✈️", false], ["손전등", "🔦", false], ["화면 회전 잠금", "🔒", true], ["저전력", "🔋", false], ["셀룰러", "📡", true]], "battery": "늘 18~23% 언저리 · 빨간색 게이지", "storage": {"label": "620GB / 1TB", "pct": 62, "note": "온보드 텔레메트리 주행 영상 400GB · 로미와 써니 사진/영상 180GB · 나머지 시스템"}, "allowLabel": "방해금지 모드 상시 켜짐 · 우회 허용", "allow": ["Romy 🐱🖤", "Oliver (긴급 우회)", "레이븐 팀 차고 비상 연락망"], "allowNote": "나머지 모든 앱의 푸시 알림 배지는 수백 개 단위로 방치"}, "device": [["기종", "iPhone 15 Pro Max · 블랙 티타늄 · 1TB"], ["케이스", "없음 (쌩폰) · 강화유리 필름도 없음"], ["상태", "모서리 곳곳에 자갈이나 공구통에 부딪힌 미세한 찍힘 자국"], ["뒷면", "애플 로고 바로 옆, 로미가 장난으로 붙여 둔 노란색 새끼 리트리버 방수 스티커 (모서리만 살짝 닳음)"], ["잠금화면", "욕실 세면대 앞, 치약 거품 묻힌 채 나인의 검은 오버핏 후드티 입고 눈 흘기는 로미 (초근접 도촬)"], ["배경화면", "순정 단색 매트 블랙"], ["배터리", "늘 18~23% 언저리 (빨간 게이지)"], ["알림", "방해금지 상시 · 로미, 올리버(긴급 우회), 레이븐 팀 차고 비상 연락망 제외"], ["저장 공간", "1TB 중 620GB 사용"]]};
+
+/* ---------- 유틸 ---------- */
+function root(){ return document.getElementById("nn-phone") || document; }
+function $$(s, r){ return Array.prototype.slice.call((r || root()).querySelectorAll(s)); }
+function el(id){ return document.getElementById(id); }
+function esc(s){ return String(s == null ? "" : s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
+function setHTML(id, h){ var e = el(id); if (e) e.innerHTML = h; return e; }
+function setText(id, t){ var e = el(id); if (e) e.textContent = t; }
+function pad(n){ return (n < 10 ? "0" : "") + n; }
+var DAYS = ["일","월","화","수","목","금","토"];
+function dateLabel(){ var d = new Date(); return (d.getMonth()+1) + "월 " + d.getDate() + "일 " + DAYS[d.getDay()] + "요일"; }
+var IOS = P.os === "ios";
+
+var PAL = {
+  night:"linear-gradient(160deg,#1b1d24,#3a3f4c 60%,#0e0f13)", mono:"linear-gradient(160deg,#2a2a2e,#6b6b72 60%,#111)",
+  black:"linear-gradient(160deg,#0b0b0c,#18181a)", steel:"linear-gradient(160deg,#4b5563,#9aa3ad 55%,#2b3038)",
+  cream:"linear-gradient(160deg,#fbf6ee,#e8dcc8 60%,#c9b69a)", sand:"linear-gradient(160deg,#f3e7d3,#d9bf98 60%,#a8865d)",
+  gold:"linear-gradient(160deg,#ffe7a8,#f0b94b 55%,#b9781f)", sun:"linear-gradient(160deg,#fff3cf,#ffc97a 55%,#f08a4b)",
+  rose:"linear-gradient(160deg,#ffe4ec,#f6a6bf 55%,#c75a85)", peach:"linear-gradient(160deg,#ffeadb,#ffbfa0 55%,#e88a6a)",
+  navy:"linear-gradient(160deg,#25324d,#3e5584 55%,#121a2b)", sky:"linear-gradient(160deg,#e3f2ff,#9cc9f0 55%,#4f86c2)",
+  mint:"linear-gradient(160deg,#e3fbf4,#9ee6cf 55%,#43a98b)", leaf:"linear-gradient(160deg,#e6f5d8,#a9d58a 55%,#5b8f3a)",
+  lav:"linear-gradient(160deg,#f1e8ff,#c7aef2 55%,#8462c6)", grape:"linear-gradient(160deg,#3a2350,#7b4fa8 55%,#1d1029)",
+  fire:"linear-gradient(160deg,#ffcf9c,#f2553d 55%,#7a1414)", wine:"linear-gradient(160deg,#4a0f19,#9e2133 55%,#1d0508)",
+  neon:"linear-gradient(160deg,#ff9be2,#a56bff 50%,#4a2bd6)", leopard:"radial-gradient(circle at 20% 30%,#5a3a1a 0 6%,transparent 7%),radial-gradient(circle at 60% 20%,#5a3a1a 0 5%,transparent 6%),radial-gradient(circle at 80% 70%,#5a3a1a 0 6%,transparent 7%),radial-gradient(circle at 35% 75%,#5a3a1a 0 5%,transparent 6%),linear-gradient(160deg,#f5cf8a,#d99a45)",
+  paper:"linear-gradient(160deg,#ffffff,#e9edf2)", sea:"linear-gradient(160deg,#dff6ff,#7cc7e8 55%,#2f7fae)", pit:"linear-gradient(170deg,#0d1020 0%,#1d2540 40%,#f2b35c 75%,#3a2a1a)",
+  bath:"linear-gradient(170deg,#e9eef2,#cfd9e0 60%,#a9b7c1)", morning:"linear-gradient(160deg,#fff4dc,#f7d9b0 45%,#c7a7e0 80%,#8a73b8)"
+};
+function bgOf(g){ return PAL[g] || g || PAL.mono; }
+function artHTML(a, cls){
+  a = a || {};
+  var em = (a.em || []).map(function(x){
+    return '<span class="em" style="left:' + x[1] + '%;top:' + x[2] + '%;font-size:' + (x[3] || 40) + 'px' + (x[4] ? ';transform:translate(-50%,-50%) rotate(' + x[4] + 'deg)' : '') + '">' + esc(x[0]) + "</span>";
+  }).join("");
+  if (!em && a.e) em = '<span class="em" style="left:50%;top:48%;font-size:' + (a.size || 38) + 'px">' + esc(a.e) + "</span>";
+  return '<div class="art ' + (cls || "") + (a.gray ? " gray" : "") + (a.blur ? " soft" : "") + (a.shake ? " shake" : "") + '" style="background:' + bgOf(a.g) + '">' + em + "</div>";
+}
+function setArt(id, a, extra){
+  var e = el(id); if (!e) return;
+  e.className = (extra || "") + " art" + (a.gray ? " gray" : "") + (a.blur ? " soft" : "") + (a.shake ? " shake" : "");
+  e.style.background = bgOf(a.g);
+  var tmp = document.createElement("div"); tmp.innerHTML = artHTML(a);
+  e.innerHTML = tmp.firstChild ? tmp.firstChild.innerHTML : "";
+}
+
+/* ---------- 토스트 ---------- */
+function toast(msg){
+  try{
+    var box = el("nn-xToasts"); if (!box) return;
+    while (box.children.length > 2) box.removeChild(box.firstChild);
+    var t = document.createElement("div"); t.className = "toast"; t.textContent = msg;
+    box.appendChild(t);
+    setTimeout(function(){ t.classList.add("out"); }, 2300);
+    setTimeout(function(){ if (t.parentNode) t.parentNode.removeChild(t); }, 2650);
+  }catch(e){}
+}
+
+/* ---------- 화면 전환 ---------- */
+var stack = ["nn-xHome"], locked = true, recentApps = [];
+function render(){
+  var top = stack[stack.length - 1], vis = {};
+  vis[top] = true;
+  var tEl = el(top);
+  if (tEl && tEl.classList.contains("overlay") && stack.length > 1) vis[stack[stack.length - 2]] = true;
+  $$(".screen").forEach(function(s){
+    var i = stack.indexOf(s.id);
+    if (vis[s.id]){ s.classList.add("active"); s.style.zIndex = String(10 + i); }
+    else { s.classList.remove("active"); s.style.zIndex = "1"; }
+  });
+  var sb = el("nn-xStatus");
+  if (sb){
+    var lightScreen = !P.dark && !locked && top !== "nn-xHome" && top !== "nn-s-camera" && top !== "nn-s-profile" && !(tEl && tEl.classList.contains("overlay"));
+    if (top === "nn-s-panel" && !P.dark) lightScreen = true;
+    sb.classList.toggle("dark", lightScreen);
+  }
+}
+function openScreen(id){
+  if (!el(id)) return;
+  if (stack[stack.length - 1] === id){ render(); return; }
+  var i = stack.indexOf(id);
+  if (i >= 0) stack = stack.slice(0, i + 1); else stack.push(id);
+  render();
+}
+function goBack(){ if (locked) return; if (stack.length > 1){ stack.pop(); render(); } else if (curPage() > 0) scrollToPage(curPage() - 1); }
+function goHome(){ if (locked) return; if (stack.length === 1){ scrollToPage(0); return; } stack = ["nn-xHome"]; render(); }
+
+var BACK = '<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>';
+function bar(id, title, right){
+  setHTML(id, '<button class="back" data-act="back" type="button" aria-label="뒤로">' + BACK + (IOS ? "<span>뒤로</span>" : "") + '</button><div class="ttl">' + title + "</div>" + (right || ""));
+}
+
+/* ---------- 상태 표시줄 / 하단 ---------- */
+function buildStatus(){
+  var s = P.status || {}, pct = s.battery;
+  if (s.batteryRange){ pct = s.batteryRange[0] + Math.floor(Math.random() * (s.batteryRange[1] - s.batteryRange[0] + 1)); }
+  P.__bat = pct;
+  var low = pct <= 20;
+  var h = "";
+  if (s.dnd) h += '<svg viewBox="0 0 24 24"><path d="M20 15.3A8.5 8.5 0 0 1 8.7 4a8.5 8.5 0 1 0 11.3 11.3z"/></svg>';
+  h += '<svg viewBox="0 0 24 24"><path d="M3 20h3v-4H3zM8.5 20h3v-8h-3zM14 20h3V8h-3zM19.5 20h3V4h-3z"/></svg>';
+  h += '<span class="opt" style="font-size:12px">' + esc(s.net || "5G") + "</span>";
+  h += '<span class="bat' + (low ? " lowtxt" : "") + '">' + (s.showPct === false ? "" : pct + "%") + '<span class="batbox' + (low ? " low" : "") + '"><i style="width:' + Math.max(2, Math.round(pct * 0.19)) + 'px"></i></span></span>';
+  setHTML("nn-xSbIcons", h);
+  var nav = el("nn-xNav");
+  if (nav){
+    nav.className = IOS ? "ios" : "android";
+    nav.innerHTML = IOS ? '<button data-act="home" aria-label="홈으로" type="button"><i></i></button>'
+      : '<button data-act="recents" aria-label="최근 앱" type="button"><svg viewBox="0 0 24 24"><path d="M7 5v14M12 5v14M17 5v14"/></svg></button><button data-act="home" aria-label="홈" type="button"><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="4"/></svg></button><button data-act="back" aria-label="뒤로 가기" type="button"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>';
+  }
+}
+
+/* ---------- 잠금 ---------- */
+function buildLock(){
+  var L = P.lock, lk = el("nn-xLock");
+  if (lk) lk.className = IOS ? "ios" : "android";
+  setArt("nn-xLockArt", L.art, "lart");
+  setText("nn-xLkHint", L.hint || "");
+  setHTML("nn-xUnlockBtn", esc(L.button || (IOS ? "위로 쓸어올려 열기" : "밀어서 잠금 해제")));
+}
+function unlock(){
+  if (!locked) return;
+  locked = false;
+  var lk = el("nn-xLock"); if (lk) lk.classList.add("hidden");
+  render();
+  if (P.lock.after) setTimeout(function(){ toast(P.lock.after); }, 450);
+}
+function lockPhone(){ stack = ["nn-xHome"]; locked = true; render(); var lk = el("nn-xLock"); if (lk) lk.classList.remove("hidden"); }
+
+/* ---------- 홈 ---------- */
+function icon(id){
+  var a = P.apps[id]; if (!a) return "";
+  var g = a.i || {};
+  var inner = g.t ? esc(g.t) : '<span class="e">' + esc(g.e || "•") + "</span>";
+  return '<div class="ic" style="--c:' + (g.bg || "#fff") + ";--fc:" + (g.fg || "#111") + '">' + inner + (a.badge ? '<span class="badge">' + esc(a.badge) + "</span>" : "") + "</div>";
+}
+function appCell(id){
+  var a = P.apps[id]; if (!a) return "<span></span>";
+  return '<button class="app" type="button" data-act="app" data-app="' + esc(id) + '" aria-label="' + esc(a.n) + '">' + icon(id) + '<span class="lbl">' + esc(a.n) + "</span></button>";
+}
+function folderCell(fid){
+  var f = P.folders[fid]; if (!f) return "<span></span>";
+  var minis = f.apps.slice(0, 4).map(function(x){ var g = (P.apps[x] || {}).i || {}; return '<span class="mini" style="--c:' + (g.bg || "#fff") + ";color:" + (g.fg || "#111") + '">' + esc(g.e || (g.t || "").slice(0, 2)) + "</span>"; }).join("");
+  var b = f.badge ? '<span class="badge">' + esc(f.badge) + "</span>" : "";
+  return '<button class="app" type="button" data-act="folder" data-folder="' + esc(fid) + '" aria-label="폴더 ' + esc(f.n) + '"><div class="ic fold">' + minis + b + '</div><span class="lbl">' + esc(f.n) + "</span></button>";
+}
+function widgetHTML(w, i){
+  var cls = "widget" + (w.size === "wide" ? " wide" : "");
+  var act = ' data-act="widget" data-i="' + i + '"';
+  if (w.type === "clock") return '<button type="button" class="' + cls + '"' + act + '><span class="w1">' + esc(w.label || "") + '</span><span class="w2 wclock">--:--</span><span class="w3 wdate"></span></button>';
+  if (w.type === "weather") return '<button type="button" class="' + cls + '"' + act + '><span class="w1">' + esc(w.city) + '</span><span class="w2 wwx">☁</span><span class="w3">' + esc(w.sub || "") + "</span></button>";
+  if (w.type === "photo") return '<button type="button" class="' + cls + ' photo"' + act + ">" + artHTML(w.art) + '<span class="w3">' + esc(w.caption || "") + "</span></button>";
+  if (w.type === "player") return '<button type="button" class="' + cls + '"' + act + '><span class="w1">' + esc(w.app) + '</span><span class="w3" style="font-size:14px;font-weight:700">' + esc(w.title) + '</span><span class="w3">' + esc(w.sub || "") + "</span></button>";
+  if (w.type === "calendar") return '<button type="button" class="' + cls + '"' + act + '><span class="w1 wday"></span><span class="w2 wdnum"></span><span class="w3">' + esc(w.sub || "") + "</span></button>";
+  return '<button type="button" class="' + cls + '"' + act + '><span class="w1">' + esc(w.label || "") + '</span><span class="w2">' + esc(w.big || "") + '</span><span class="w3">' + esc(w.sub || "") + "</span></button>";
+}
+var WIDGETS = [];
+function buildHome(){
+  var wall = el("nn-xWall");
+  if (wall){ wall.innerHTML = artHTML(P.home.wall); var a = wall.firstChild; if (a){ a.style.position = "absolute"; a.style.inset = "0"; a.style.borderRadius = "inherit"; } }
+  var html = "";
+  P.home.pages.forEach(function(pg){
+    var h = '<div class="hpage">';
+    if (pg.widgets && pg.widgets.length){
+      h += '<div class="wgrid">' + pg.widgets.map(function(w){ WIDGETS.push(w); return widgetHTML(w, WIDGETS.length - 1); }).join("") + "</div>";
+    }
+    if (pg.items && pg.items.length){
+      h += '<div class="grid"' + (pg.bottom ? ' style="margin-top:auto"' : '') + '>' + pg.items.map(function(it){
+        if (it === null || it === "") return "<span></span>";
+        if (typeof it === "object" && it.folder) return folderCell(it.folder);
+        return appCell(it);
+      }).join("") + "</div>";
+    }
+    if (pg.note) h += '<div style="margin-top:auto;text-align:center;font-size:11px;color:rgba(255,255,255,.7);text-shadow:0 1px 3px rgba(0,0,0,.5)">' + esc(pg.note) + "</div>";
+    h += "</div>";
+    html += h;
+  });
+  setHTML("nn-xPages", html);
+  var n = P.home.pages.length, d = "";
+  for (var i = 0; i < n; i++) d += '<button type="button" data-act="page" data-page="' + i + '" aria-label="' + (i + 1) + '페이지"' + (i === 0 ? ' class="on"' : "") + "><i></i></button>";
+  setHTML("nn-xDots", n > 1 ? d : "");
+  setHTML("nn-xDock", P.home.dock.map(appCell).join(""));
+}
+function curPage(){ var p = el("nn-xPages"); if (!p || !p.clientWidth) return 0; return Math.round(p.scrollLeft / p.clientWidth); }
+function scrollToPage(i){
+  var p = el("nn-xPages"); if (!p) return;
+  try { p.scrollTo({left: p.clientWidth * i, behavior: "smooth"}); } catch(e){ p.scrollLeft = p.clientWidth * i; }
+  updateDots(i);
+}
+function updateDots(i){ $$("#nn-xDots button").forEach(function(b){ b.classList.toggle("on", Number(b.getAttribute("data-page")) === i); }); }
+function openFolder(fid){
+  var f = P.folders[fid]; if (!f) return;
+  setText("nn-xFolderTitle", f.n);
+  setHTML("nn-xFolderGrid", f.apps.map(appCell).join("") + (f.note ? '<div style="grid-column:1/-1;text-align:center;font-size:12px;opacity:.8;padding-top:4px">' + esc(f.note) + "</div>" : ""));
+  if (stack[stack.length - 1] === "nn-s-folder") stack.pop();
+  openScreen("nn-s-folder");
+}
+
+/* ---------- 앱 실행 ---------- */
+var SCR = {phone:"nn-s-phone", chat:"nn-s-chats", gallery:"nn-s-gallery", notes:"nn-s-notes", browser:"nn-s-browser", alarm:"nn-s-alarm", music:"nn-s-music", camera:"nn-s-camera", list:"nn-s-list"};
+var curApp = null;
+function launchApp(id){
+  var a = P.apps[id]; if (!a) return;
+  var ri = recentApps.indexOf(id); if (ri >= 0) recentApps.splice(ri, 1); recentApps.unshift(id);
+  curApp = id;
+  stack = ["nn-xHome"];
+  var t = a.type || "list";
+  if (t === "phone") fillPhone(a);
+  else if (t === "chat") fillChats(a);
+  else if (t === "gallery") fillGallery(a);
+  else if (t === "notes") fillNotes(a);
+  else if (t === "browser") fillBrowser(a);
+  else if (t === "alarm") fillAlarm(a);
+  else if (t === "music") fillMusic(a);
+  else if (t === "camera") bar("nn-xBarCam", esc(a.n));
+  else { fillList(a); t = "list"; }
+  openScreen(SCR[t] || "nn-s-list");
+}
+
+/* ---------- 목록형 앱 ---------- */
+var LIST = null;
+function fillList(a){
+  LIST = a;
+  bar("nn-xBarList", esc(a.n) + (a.sub ? "<small>" + esc(a.sub) + "</small>" : ""));
+  var h = "";
+  var hd = a.head || {};
+  var g = a.i || {};
+  h += '<div class="card"><div class="headcard"><span class="hi" style="background:' + (g.bg || "#eee") + ";color:" + (g.fg || "#111") + '">' + esc(g.e || g.t || "") + "</span><div><b>" + esc(hd.title || a.n) + "</b><span>" + esc(hd.sub || "") + "</span></div></div>" +
+    (hd.lines ? '<div style="margin-top:10px">' + hd.lines.map(function(l){ return '<div class="kv"><span>' + esc(l[0]) + "</span><span>" + esc(l[1]) + "</span></div>"; }).join("") + "</div>" : "") + "</div>";
+  (a.sections || []).forEach(function(s, si){
+    h += '<div class="sec">' + esc(s.h) + "</div>";
+    if (s.tiles){
+      h += '<div class="thumbs" style="padding:0 14px">' + s.rows.map(function(r, ri){
+        return '<button class="thumb" type="button" data-act="lrow" data-s="' + si + '" data-r="' + ri + '">' + artHTML(r.art || {e: r.e, g: r.g}) + '<span class="cap">' + esc(r.t) + "</span></button>";
+      }).join("") + "</div>";
+      return;
+    }
+    h += s.rows.map(function(r, ri){
+      return '<button class="row" type="button" data-act="lrow" data-s="' + si + '" data-r="' + ri + '"><span class="ava" style="border-radius:12px;background:' + bgOf(r.g || "paper") + '">' + esc(r.e || "•") + '</span><span class="mid"><span class="t1">' + esc(r.t) + "</span>" + (r.s ? '<span class="t2">' + esc(r.s) + "</span>" : "") + "</span>" + (r.r ? '<span class="r">' + esc(r.r) + "</span>" : "") + "</button>";
+    }).join("");
+  });
+  if (a.foot) h += '<div class="empty">' + esc(a.foot) + "</div>";
+  setHTML("nn-xList", h);
+}
+
+/* ---------- 전화 ---------- */
+var DIRI = {in:"↙", out:"↗", miss:"↙", reject:"⊘", call:"↔", none:""};
+var DIRT = {in:"수신", out:"발신", miss:"부재중", reject:"수신 거부", call:"통화", none:"기록 없음"};
+function fillPhone(a){
+  bar("nn-xBarPhone", esc(a.n));
+  var C = a.calls || [];
+  var h = a.summary ? '<div class="card" style="font-size:12.5px;color:var(--sub);line-height:1.6">' + esc(a.summary) + "</div>" : "";
+  h += C.map(function(c, i){
+    var miss = c.k === "miss" || c.k === "reject";
+    return '<button class="row" type="button" data-act="call" data-i="' + i + '"><span style="width:18px;text-align:center;color:' + (miss ? "var(--red)" : "var(--sub)") + '">' + DIRI[c.k] + '</span><span class="ava">' + esc(c.ava || Array.from(c.n)[0]) + '</span><span class="mid"><span class="t1" style="' + (miss ? "color:var(--red)" : "") + '">' + esc(c.n) + (c.count ? " (" + esc(c.count) + ")" : "") + '</span><span class="t2 one">' + esc(DIRT[c.k]) + (c.d ? " · " + esc(c.d) : "") + '</span></span><span class="r">' + esc(c.w || "") + "</span></button>";
+  }).join("");
+  setHTML("nn-xCalls", h);
+  var names = [];
+  C.forEach(function(c){ if (names.indexOf(c.n) < 0) names.push(c.n); });
+  (a.contacts || []).forEach(function(c){ if (names.indexOf(c.n) < 0) names.push(c.n); });
+  P.__names = names;
+  setHTML("nn-xContacts", names.map(function(n, i){
+    var ex = (a.contacts || []).filter(function(c){ return c.n === n; })[0];
+    return '<button class="row" type="button" data-act="contact" data-i="' + i + '"><span class="ava">' + esc((ex && ex.ava) || (C.filter(function(c){ return c.n === n; })[0] || {}).ava || Array.from(n)[0]) + '</span><span class="mid"><span class="t1">' + esc(n) + "</span>" + (ex && ex.s ? '<span class="t2">' + esc(ex.s) + "</span>" : "") + "</span></button>";
+  }).join(""));
+  switchTab("ph", "recent");
+}
+function openCallDetail(name){
+  var a = P.apps[curApp] || {}, C = (a.calls || []).filter(function(c){ return c.n === name; });
+  var ex = (a.contacts || []).filter(function(c){ return c.n === name; })[0];
+  var ava = (ex && ex.ava) || (C[0] && C[0].ava) || Array.from(name)[0];
+  bar("nn-xBarCd", esc(name));
+  var h = '<div class="empty" style="padding:26px 20px 6px"><div class="ava" style="width:84px;height:84px;font-size:38px;margin:0 auto 10px">' + esc(ava) + '</div><div style="font-size:21px;font-weight:700;color:var(--text)">' + esc(name) + "</div>" + (ex && ex.s ? '<div class="note-s">' + esc(ex.s) + "</div>" : "") + "</div>";
+  h += '<div style="display:flex;gap:10px;justify-content:center;padding:6px 16px">' + '<button class="btn" type="button" data-act="callnow" data-n="' + esc(name) + '">📞 전화</button>' + (ex && ex.chat ? '<button class="btn ghost" type="button" data-act="chatfrom" data-chat="' + esc(ex.chat) + '">💬 메시지</button>' : "") + "</div>";
+  h += C.length ? '<div class="sec">통화 기록</div><div class="card">' + C.map(function(c){
+    return '<div class="kv"><span>' + esc(c.w || "") + " · " + esc(DIRT[c.k]) + (c.count ? " " + esc(c.count) : "") + "</span><span>" + esc(c.d || "-") + (c.note ? '<br><small style="color:var(--sub)">' + esc(c.note) + "</small>" : "") + "</span></div>";
+  }).join("") + "</div>" : '<div class="empty">통화 기록 없음</div>';
+  setHTML("nn-xCd", h);
+  openScreen("nn-s-calldetail");
+}
+
+/* ---------- 메신저 ---------- */
+var CHATAPP = null, curChat = null;
+function chatList(){ return (CHATAPP && CHATAPP.chats) || []; }
+function fillChats(a){
+  CHATAPP = a;
+  bar("nn-xBarChats", esc(a.n));
+  setHTML("nn-xChats", (a.top ? '<div class="note-s" style="padding:10px 16px 0">' + esc(a.top) + "</div>" : "") + chatList().map(function(c, i){
+    var r = '<span class="r">' + esc(c.when || "") + (c.unread ? '<br><span class="badge" style="margin-top:4px;background:' + (c.muted ? "var(--sub)" : "var(--acc)") + '">' + esc(c.unread) + "</span>" : "") + (c.pinned ? "<br>📌" : "") + (c.muted ? "<br>🔕" : "") + "</span>";
+    return '<button class="row" type="button" data-act="chat" data-i="' + i + '"><span class="ava" style="background:' + bgOf(c.g || "paper") + '">' + esc(c.ava || "") + '</span><span class="mid"><span class="t1">' + esc(c.title) + '</span><span class="t2 one">' + esc(c.preview || "") + "</span></span>" + r + "</button>";
+  }).join(""));
+  setHTML("nn-xEmoGrid", (P.emoji || []).map(function(x){ return '<button type="button" data-act="emo" data-e="' + esc(x) + '">' + esc(x) + "</button>"; }).join(""));
+}
+function bubble(m){
+  var k = m.kind;
+  if (k === "sticker") return '<div class="stk" data-act="mtap" data-msg="' + esc(m.cap || m.e) + '">' + esc(m.e) + (m.cap ? "<small>" + esc(m.cap) + "</small>" : "") + "</div>";
+  if (k === "photo") return '<div class="pbub" data-act="mtap" data-msg="📷 ' + esc(m.cap || "사진") + '">' + artHTML(m.art || {e: m.e || "📷", g: m.g || "mono"}) + (m.cap ? "<small>" + esc(m.cap) + "</small>" : "") + "</div>";
+  if (k === "voice") return '<div class="bub voice" data-act="voice" data-msg="' + esc(m.cap || "음성 메시지") + '"><span class="pl">▶</span><span class="eq"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span style="font-size:12px">' + esc(m.dur || "") + "</span></div>";
+  if (k === "file") return '<div class="bub file" data-act="mtap" data-msg="' + esc(m.cap || "파일") + '"><span class="fi">' + esc(m.e || "📄") + '</span><span style="font-size:13px">' + esc(m.t) + "</span></div>";
+  return '<div class="bub">' + esc(m.t) + "</div>";
+}
+function openChat(i){
+  var c = chatList()[i]; if (!c) return;
+  curChat = c;
+  var info = '<button class="ibtn" data-act="profile" type="button" aria-label="프로필"><span class="ava" style="width:34px;height:34px;font-size:16px;background:' + bgOf(c.g || "paper") + '">' + esc(c.ava || "") + "</span></button>";
+  bar("nn-xBarChat", esc(c.title) + (c.subtitle ? "<small>" + esc(c.subtitle) + "</small>" : ""), info);
+  var h = "", prev = null;
+  (c.msgs || []).forEach(function(m){
+    if (m.sys){ h += '<div class="sys">' + esc(m.sys) + "</div>"; prev = null; return; }
+    var n = m.repeat || 1;
+    for (var r = 0; r < n; r++){
+      var who = m.me ? "__me" : (m.name || c.title);
+      var first = who !== prev; prev = who;
+      var tm = m.tm ? '<span class="tm">' + esc(m.tm) + "</span>" : "";
+      if (m.me) h += '<div class="msg me"><div class="col">' + bubble(m) + (r === n - 1 ? tm : "") + "</div></div>";
+      else h += '<div class="msg them">' + (c.group ? '<span class="ava av' + (first ? "" : " ghost") + '">' + esc(m.ava || "") + "</span>" : "") + '<div class="col">' + (c.group && first ? '<span class="nm">' + esc(m.name || "") + "</span>" : "") + bubble(m) + (r === n - 1 ? tm : "") + "</div></div>";
+    }
+  });
+  if (c.foot) h += '<div class="sys">' + esc(c.foot) + "</div>";
+  setHTML("nn-xChatBody", h);
+  var d = el("nn-xEmo"); if (d) d.classList.remove("on");
+  openScreen("nn-s-chat");
+  var b = el("nn-xChatBody"); if (b) setTimeout(function(){ b.scrollTop = b.scrollHeight; }, 40);
+}
+function openProfile(){
+  var c = curChat; if (!c) return;
+  var p = c.profile || {};
+  bar("nn-xBarProf", "");
+  setHTML("nn-xProf", artHTML(p.bg || {g: c.g || "night"}) + '<span class="ava pv" style="background:' + bgOf(c.g || "paper") + '">' + esc(c.ava || "") + "</span><h2>" + esc(c.title) + "</h2><p>" + esc(p.status || "") + "</p>" + (p.pic ? '<p style="font-size:12px;opacity:.85">프로필 사진: ' + esc(p.pic) + "</p>" : "") + '<div class="acts"><button class="btn" type="button" data-act="back">💬 대화로</button><button class="btn ghost" type="button" data-act="callnow" data-n="' + esc(c.title) + '">📞 전화</button></div>');
+  openScreen("nn-s-profile");
+}
+
+/* ---------- 사진 ---------- */
+var GAL = null, curAlbum = null, curPhoto = 0, unlockedAlb = {}, liked = {};
+function findAlbum(id){ var A = (GAL && GAL.albums) || []; for (var i = 0; i < A.length; i++) if (A[i].id === id) return A[i]; return null; }
+function fillGallery(a){
+  GAL = a;
+  bar("nn-xBarGal", esc(a.n) + (a.sub ? "<small>" + esc(a.sub) + "</small>" : ""));
+  setHTML("nn-xGal", '<div class="albums">' + a.albums.filter(function(x){ return !x.child; }).map(function(al){
+    return '<button class="album" type="button" data-act="album" data-id="' + esc(al.id) + '">' + artHTML(al.cover) + '<div class="an">' + (al.lock ? "🔒 " : "") + esc(al.n) + '</div><div class="ac">' + esc(al.count || "") + "</div></button>";
+  }).join("") + "</div>" + (a.foot ? '<div class="empty">' + esc(a.foot) + "</div>" : ""));
+}
+function albumBody(al, target){
+  if (al.lock && !unlockedAlb[al.id]){
+    return '<div class="lockbox"><b style="color:var(--text);font-size:15px">' + esc(al.n) + "</b><div>" + esc(al.lockText || "잠긴 앨범") + '</div><button class="faceid" type="button" data-act="unlockalb" data-id="' + esc(al.id) + '" data-target="' + target + '" aria-label="잠금 해제">' + (IOS ? "☺" : "◉") + "</button><div>눌러서 잠금 해제</div></div>";
+  }
+  var h = "";
+  if (al.note) h += '<div class="note-s" style="padding:10px 14px 4px">' + esc(al.note) + "</div>";
+  if (al.sub && al.sub.length){
+    h += '<div class="albums" style="padding-bottom:4px">' + al.sub.map(function(sid){
+      var s = findAlbum(sid); if (!s) return "";
+      return '<button class="album" type="button" data-act="subalbum" data-id="' + esc(s.id) + '">' + artHTML(s.cover) + '<div class="an">' + (s.lock ? "🔒 " : "") + esc(s.n) + '</div><div class="ac">' + esc(s.count || "") + "</div></button>";
+    }).join("") + "</div>";
+  }
+  var ph = al.photos || [];
+  if (ph.length){
+    h += '<div class="thumbs">' + ph.map(function(p, i){
+      return '<button class="thumb" type="button" data-act="photo" data-i="' + i + '">' + artHTML(p) + (p.tag ? '<span class="tag">' + esc(p.tag) + "</span>" : "") + (p.fav ? '<span class="fav">♥</span>' : "") + '<span class="cap">' + esc(p.t) + "</span></button>";
+    }).join("");
+    if (al.more) h += '<button class="thumb more" type="button" data-act="more" data-msg="' + esc(al.more) + '"><b style="color:var(--text);font-size:14px">···</b>' + esc(al.moreLabel || "더 보기") + "</button>";
+    h += "</div>";
+  }
+  if (al.foot) h += '<div class="empty">' + esc(al.foot) + "</div>";
+  return h;
+}
+var albumCtx = {};
+function openAlbum(id, sub){
+  var al = findAlbum(id); if (!al) return;
+  var scr = sub ? "nn-s-subalbum" : "nn-s-album", body = sub ? "nn-xSub" : "nn-xAlb", b = sub ? "nn-xBarSub" : "nn-xBarAlb";
+  albumCtx[scr] = al; curAlbum = al;
+  bar(b, (al.lock ? "🔒 " : "") + esc(al.n) + (al.count ? "<small>" + esc(al.count) + "</small>" : ""));
+  setHTML(body, albumBody(al, scr));
+  openScreen(scr);
+}
+function showPhoto(i){
+  var al = curAlbum; if (!al || !al.photos || !al.photos.length) return;
+  i = Math.max(0, Math.min(al.photos.length - 1, i)); curPhoto = i;
+  var p = al.photos[i];
+  setArt("nn-xPhotoArt", Object.assign({}, p, {em: p.em || null}), "photo-art");
+  if (!p.em){ var e = el("nn-xPhotoArt"); if (e) e.innerHTML = '<span class="em" style="left:50%;top:50%;font-size:88px">' + esc(p.e || "") + "</span>"; }
+  var key = al.id + ":" + i;
+  bar("nn-xBarPhoto", esc(al.n), '<button class="ibtn" data-act="like" type="button" aria-label="즐겨찾기" style="color:' + (liked[key] || p.fav ? "var(--red)" : "var(--acc)") + '"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/></svg></button>');
+  setText("nn-xPhotoCap", p.t); setText("nn-xPhotoDesc", p.d || ""); setText("nn-xPhotoIdx", (i + 1) + " / " + al.photos.length);
+  var pv = el("nn-xPrev"), nx = el("nn-xNext");
+  if (pv) pv.disabled = i === 0; if (nx) nx.disabled = i === al.photos.length - 1;
+}
+
+/* ---------- 메모 / 브라우저 / 알람 / 음악 ---------- */
+var NOTES = null;
+function fillNotes(a){
+  NOTES = a;
+  bar("nn-xBarNotes", esc(a.n));
+  setHTML("nn-xNotes", '<div class="sec">' + esc(a.label || "메모") + "</div>" + a.notes.map(function(n, i){
+    return '<button class="row" type="button" data-act="note" data-i="' + i + '"><span class="ava" style="border-radius:12px;background:' + bgOf("sun") + '">' + esc(n.e || "📝") + '</span><span class="mid"><span class="t1">' + esc(n.t) + '</span><span class="t2 one">' + esc((n.lines || []).join(" · ")) + "</span></span></button>";
+  }).join(""));
+}
+function openNote(i){
+  var n = NOTES && NOTES.notes[i]; if (!n) return;
+  bar("nn-xBarNote", esc(NOTES.n));
+  setHTML("nn-xNote", "<h2>" + esc(n.t) + "</h2><ul>" + (n.lines || []).map(function(l){ return "<li>" + esc(l) + "</li>"; }).join("") + "</ul>");
+  openScreen("nn-s-note");
+}
+var BR = null;
+function fillBrowser(a){
+  BR = a;
+  bar("nn-xBarBrowser", esc(a.n));
+  var h = '<form class="searchbar" data-form="search" autocomplete="off"><input type="search" id="nn-xQ" placeholder="검색 또는 주소 입력" enterkeyhint="search"><button class="ibtn" type="submit" aria-label="검색"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg></button></form>';
+  if (a.bookmarks && a.bookmarks.length) h += '<div class="sec">즐겨찾기</div>' + a.bookmarks.map(function(b, i){ return '<button class="row" type="button" data-act="bm" data-i="' + i + '"><span class="ava" style="border-radius:10px">⭐</span><span class="mid"><span class="t1">' + esc(b) + "</span></span></button>"; }).join("");
+  if (a.tabs) h += '<div class="sec">열려 있는 탭 · ' + esc(a.tabs.count) + "</div>" + a.tabs.list.map(function(t, i){ return '<button class="row" type="button" data-act="tabitem" data-i="' + i + '"><span class="ava" style="border-radius:10px">🗂</span><span class="mid"><span class="t1" style="font-weight:500;font-size:14px">' + esc(t) + "</span></span></button>"; }).join("") + (a.tabs.note ? '<div class="note-s" style="padding:6px 16px">' + esc(a.tabs.note) + "</div>" : "");
+  h += '<div class="sec">최근 검색어</div><div id="nn-xSearches"></div>';
+  setHTML("nn-xBrowser", h);
+  renderSearches();
+}
+function renderSearches(){
+  var S = (BR && BR.searches) || [];
+  setHTML("nn-xSearches", S.length ? S.map(function(s, i){
+    return '<div class="row" role="button" data-act="search" data-i="' + i + '"><span class="ava" style="width:34px;height:34px;font-size:14px">🔍</span><span class="mid"><span class="t1" style="font-weight:500;font-size:14px">' + esc(s.q) + "</span>" + (s.note ? '<span class="t2">' + esc(s.note) + "</span>" : "") + '</span><button class="ibtn" type="button" data-act="delsearch" data-i="' + i + '" aria-label="삭제"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>';
+  }).join("") : '<div class="empty">최근 검색어 없음</div>');
+}
+var AL = null;
+function fillAlarm(a){
+  AL = a;
+  bar("nn-xBarAlarm", esc(a.n));
+  setHTML("nn-xAlarm", '<div class="sec">알람</div>' + a.alarms.map(function(x, i){
+    return '<div class="alarmrow' + (x.on ? "" : " off") + '"><div class="mid"><div class="at">' + esc(x.t) + '</div><span class="t2" style="display:block;font-size:13px;color:var(--sub)">' + esc(x.label) + (x.rep ? " · " + esc(x.rep) : "") + "</span>" + (x.note ? '<span class="chip" style="margin-top:5px">' + esc(x.note) + "</span>" : "") + '</div><button class="swbtn" type="button" data-act="alarmtog" data-i="' + i + '" aria-label="알람 켜기/끄기"><span class="sw' + (x.on ? " on" : "") + '"></span></button></div>';
+  }).join(""));
+}
+var MU = null, playing = -1;
+function fillMusic(a){
+  MU = a;
+  bar("nn-xBarMusic", esc(a.n));
+  var t = a.tracks[playing >= 0 ? playing : 0];
+  var h = '<div class="nowplay">' + artHTML({e: playing >= 0 ? "🎶" : "🎧", g: a.g || "night", size: 60}) + "<h3>" + esc(t.t) + "</h3><p>" + esc(t.a) + '</p><div class="ctrls"><button type="button" data-act="mprev" aria-label="이전 곡">⏮</button><button type="button" class="main" data-act="mplay" aria-label="재생">' + (playing >= 0 ? "❚❚" : "▶") + '</button><button type="button" data-act="mnext" aria-label="다음 곡">⏭</button></div></div>';
+  h += '<div class="sec">' + esc(a.label || "최근 재생") + "</div>" + a.tracks.map(function(x, i){
+    return '<button class="row" type="button" data-act="track" data-i="' + i + '"><span class="ava" style="border-radius:8px;background:' + bgOf(x.g || a.g || "night") + '">' + (playing === i ? "🔊" : "♪") + '</span><span class="mid"><span class="t1">' + esc(x.t) + '</span><span class="t2">' + esc(x.a) + "</span></span></button>";
+  }).join("") + (a.foot ? '<div class="empty">' + esc(a.foot) + "</div>" : "");
+  setHTML("nn-xMusic", h);
+}
+
+/* ---------- 제어 센터 ---------- */
+var TOG = [];
+function buildPanel(){
+  var p = P.panel || {};
+  if (!TOG.length) TOG = (p.toggles || []).map(function(t){ return {n:t[0], ic:t[1], on:!!t[2]}; });
+  var h = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div><div style="font-size:26px;font-weight:300" class="pclock">--:--</div><div style="font-size:12px;color:var(--sub)" class="pdate"></div></div><button class="ibtn" data-act="lock" aria-label="화면 잠금" type="button"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></button></div>';
+  h += '<div class="qs">' + TOG.map(function(t, i){ return '<button class="tog' + (t.on ? " on" : "") + '" type="button" data-act="tog" data-i="' + i + '"><span class="ti">' + esc(t.ic) + "</span>" + esc(t.n) + "</button>"; }).join("") + "</div>";
+  h += '<div class="card" style="margin:14px 0 10px"><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600"><span>배터리</span><span style="color:' + (P.__bat <= 20 ? "var(--red)" : "var(--text)") + '">' + P.__bat + "%</span></div>" + (p.battery ? '<div class="note-s">' + esc(p.battery) + "</div>" : "") + "</div>";
+  if (p.storage) h += '<div class="card" style="margin:0 0 10px"><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600"><span>저장 공간</span><span style="color:var(--sub)">' + esc(p.storage.label) + '</span></div><div class="bar"><i style="width:' + p.storage.pct + '%"></i></div>' + (p.storage.note ? '<div class="note-s">' + esc(p.storage.note) + "</div>" : "") + "</div>";
+  if (p.allow) h += '<div class="card" style="margin:0 0 10px"><div style="font-size:12px;color:var(--sub)">' + esc(p.allowLabel || "알림 허용") + '</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">' + p.allow.map(function(x){ return '<span class="chip">' + esc(x) + "</span>"; }).join("") + "</div>" + (p.allowNote ? '<div class="note-s">' + esc(p.allowNote) + "</div>" : "") + "</div>";
+  h += '<button class="btn full" data-act="device" type="button">휴대전화 정보</button>';
+  setHTML("nn-xPanel", h);
+  tick();
+}
+function buildDevice(){
+  bar("nn-xBarDevice", "휴대전화 정보");
+  setHTML("nn-xDevice", '<div class="card">' + (P.device || []).map(function(r){ return '<div class="kv"><span>' + esc(r[0]) + "</span><span>" + esc(r[1]) + "</span></div>"; }).join("") + "</div>");
+}
+function renderRecents(){
+  setHTML("nn-xRecent", recentApps.length ? recentApps.map(function(id){
+    return '<button class="row" type="button" data-act="app" data-app="' + esc(id) + '" style="border-radius:16px;background:rgba(255,255,255,.12);margin-bottom:8px;color:#fff;border:0">' + icon(id) + '<span class="mid"><span class="t1">' + esc(P.apps[id].n) + "</span></span></button>";
+  }).join("") : '<div class="empty" style="color:#ddd">최근 실행한 앱이 없어요</div>');
+}
+function switchTab(g, t){
+  $$('[data-act="tab"][data-group="' + g + '"]').forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-tab") === t); });
+  $$('.pane[data-group="' + g + '"]').forEach(function(p){ p.classList.toggle("on", p.getAttribute("data-pane") === t); });
+}
+
+/* ---------- 이벤트 ---------- */
+function handle(act, e){
+  if (locked && act !== "unlock" && act !== "locktap") return;
+  var i = Number(e.getAttribute("data-i")), x;
+  switch (act){
+    case "locktap": toast(P.lock.tap || "📷 잠금화면 사진"); break;
+    case "unlock": unlock(); break;
+    case "lock": lockPhone(); break;
+    case "back": goBack(); break;
+    case "home": goHome(); break;
+    case "recents": renderRecents(); stack = ["nn-xHome"]; openScreen("nn-s-recents"); break;
+    case "clearrecent": recentApps = []; renderRecents(); toast("최근 앱을 모두 닫았어요"); break;
+    case "panel": if (stack[stack.length - 1] === "nn-s-panel"){ goBack(); break; } buildPanel(); openScreen("nn-s-panel"); break;
+    case "device": buildDevice(); openScreen("nn-s-device"); break;
+    case "tog": x = TOG[i]; if (x){ x.on = !x.on; buildPanel(); toast(x.n + (x.on ? " 켜짐" : " 꺼짐")); } break;
+    case "page": scrollToPage(i = Number(e.getAttribute("data-page")) || 0); break;
+    case "widget": x = WIDGETS[i]; if (x){ if (x.open && P.apps[x.open]) launchApp(x.open); else toast(x.tip || x.caption || "위젯"); } break;
+    case "app": launchApp(e.getAttribute("data-app")); break;
+    case "folder": openFolder(e.getAttribute("data-folder")); break;
+    case "tab": switchTab(e.getAttribute("data-group"), e.getAttribute("data-tab")); break;
+    case "lrow": x = LIST && LIST.sections[Number(e.getAttribute("data-s"))]; x = x && x.rows[Number(e.getAttribute("data-r"))]; if (x) toast(x.tip || ((x.e ? x.e + " " : "") + x.t)); break;
+    case "call": x = (P.apps[curApp].calls || [])[i]; if (x) openCallDetail(x.n); break;
+    case "contact": x = (P.__names || [])[i]; if (x) openCallDetail(x); break;
+    case "callnow": toast("📞 " + e.getAttribute("data-n") + " 연결 중…"); break;
+    case "chatfrom":
+      var ca = null; Object.keys(P.apps).forEach(function(k){ if (P.apps[k].type === "chat") ca = ca || P.apps[k]; });
+      if (ca){ fillChats(ca); var key = e.getAttribute("data-chat"); var idx = -1; ca.chats.forEach(function(c, j){ if (c.key === key) idx = j; }); if (idx >= 0) openChat(idx); }
+      break;
+    case "chat": openChat(i); break;
+    case "profile": openProfile(); break;
+    case "mtap": toast(e.getAttribute("data-msg")); break;
+    case "voice": e.classList.add("playing"); setTimeout(function(){ e.classList.remove("playing"); }, 1600); toast("🔊 " + e.getAttribute("data-msg")); break;
+    case "emotoggle": x = el("nn-xEmo"); if (x) x.classList.toggle("on"); break;
+    case "emo": toast(e.getAttribute("data-e") + " 보내기 (미리보기)"); break;
+    case "sendfake": toast(P.sendTip || "보낼 말 고르는 중…"); break;
+    case "album": openAlbum(e.getAttribute("data-id"), false); break;
+    case "subalbum": openAlbum(e.getAttribute("data-id"), true); break;
+    case "unlockalb":
+      unlockedAlb[e.getAttribute("data-id")] = true;
+      var tgt = e.getAttribute("data-target"), al2 = findAlbum(e.getAttribute("data-id"));
+      toast(IOS ? "Face ID 확인됨" : "지문 확인됨");
+      setHTML(tgt === "nn-s-subalbum" ? "nn-xSub" : "nn-xAlb", albumBody(al2, tgt));
+      curAlbum = al2; albumCtx[tgt] = al2;
+      break;
+    case "photo":
+      var top = stack[stack.length - 1]; curAlbum = albumCtx[top] || curAlbum;
+      showPhoto(i); openScreen("nn-s-photo"); break;
+    case "photonav": showPhoto(curPhoto + Number(e.getAttribute("data-d"))); break;
+    case "like": if (curAlbum){ var k2 = curAlbum.id + ":" + curPhoto; liked[k2] = !liked[k2]; showPhoto(curPhoto); toast(liked[k2] ? "♥ 즐겨찾기" : "즐겨찾기 해제"); } break;
+    case "more": toast(e.getAttribute("data-msg")); break;
+    case "note": openNote(i); break;
+    case "bm": toast("⭐ " + BR.bookmarks[i] + " 여는 중…"); break;
+    case "tabitem": toast("🗂 " + BR.tabs.list[i]); break;
+    case "search": x = BR.searches[i]; if (x){ var q = el("nn-xQ"); if (q) q.value = x.q; toast("🔍 " + x.q); } break;
+    case "delsearch": if (BR.searches[i]){ BR.searches.splice(i, 1); renderSearches(); toast("검색어 삭제됨"); } break;
+    case "alarmtog": x = AL.alarms[i]; if (x){ x.on = !x.on; fillAlarm(AL); toast(x.t + " " + x.label + (x.on ? " · 켜짐" : " · 꺼짐")); } break;
+    case "mplay": playing = playing >= 0 ? -1 : 0; fillMusic(MU); toast(playing >= 0 ? "▶ " + MU.tracks[0].t : "일시정지"); break;
+    case "mnext": playing = ((playing < 0 ? 0 : playing) + 1) % MU.tracks.length; fillMusic(MU); toast("▶ " + MU.tracks[playing].t); break;
+    case "mprev": playing = ((playing < 0 ? 0 : playing) - 1 + MU.tracks.length) % MU.tracks.length; fillMusic(MU); toast("▶ " + MU.tracks[playing].t); break;
+    case "track": playing = i; fillMusic(MU); toast("▶ " + MU.tracks[i].t + " — " + MU.tracks[i].a); break;
+    case "shutter": x = el("nn-xFlash"); if (x){ x.classList.remove("go"); void x.offsetWidth; x.classList.add("go"); } toast(P.shutterTip || "찰칵 📸"); break;
+    default: break;
+  }
+}
+function bind(){
+  var ph = root();
+  ph.addEventListener("click", function(ev){
+    var t = ev.target.closest("[data-act]");
+    if (!t || !ph.contains(t)) return;
+    if (t.tagName === "BUTTON" && t.type === "submit") return;
+    ev.preventDefault(); ev.stopPropagation();
+    try { handle(t.getAttribute("data-act"), t); } catch(err){ if (window.console) console.error(err); }
+  });
+  ph.addEventListener("submit", function(ev){
+    var f = ev.target; if (!f || f.getAttribute("data-form") !== "search") return;
+    ev.preventDefault();
+    var q = el("nn-xQ"), v = q ? q.value.trim() : "";
+    if (!v){ toast("검색어를 입력하세요"); return; }
+    BR.searches.unshift({q: v}); renderSearches(); toast("🔍 " + v); if (q) q.blur();
+  });
+  var pages = el("nn-xPages");
+  if (pages){ var tk = false; pages.addEventListener("scroll", function(){ if (tk) return; tk = true; requestAnimationFrame(function(){ tk = false; updateDots(curPage()); }); }, {passive:true}); }
+  var lk = el("nn-xLock");
+  if (lk){
+    var sy = null;
+    lk.addEventListener("touchstart", function(ev){ sy = ev.touches[0].clientY; }, {passive:true});
+    lk.addEventListener("touchend", function(ev){ if (sy === null) return; var dy = sy - ev.changedTouches[0].clientY; sy = null; if (dy > 70) unlock(); }, {passive:true});
+  }
+}
+
+/* ---------- 시계 (장식) ---------- */
+function tick(){
+  try{
+    var d = new Date(), t = pad(d.getHours()) + ":" + pad(d.getMinutes()), dl = dateLabel();
+    setText("nn-xClock", t); setText("nn-xLkTime", t); setText("nn-xLkDate", dl);
+    $$(".wclock, .pclock").forEach(function(x){ x.textContent = t; });
+    $$(".wdate, .pdate").forEach(function(x){ x.textContent = dl; });
+    $$(".wday").forEach(function(x){ x.textContent = DAYS[d.getDay()] + "요일"; });
+    $$(".wdnum").forEach(function(x){ x.textContent = String(d.getDate()); });
+    var h = d.getHours();
+    $$(".wwx").forEach(function(x){ x.textContent = h >= 6 && h < 18 ? "⛅" : "☁"; });
+  }catch(e){}
+}
+
+function init(){
+  try { buildStatus(); } catch(e){}
+  buildLock(); buildHome(); buildPanel(); buildDevice(); renderRecents();
+  try { tick(); setInterval(tick, 10000); } catch(e){}
+  render(); bind();
+}
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
+})();
+</script>
+</div>
