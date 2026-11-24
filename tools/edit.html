@@ -23,6 +23,9 @@
     box-shadow: 0 10px 40px rgba(20,100,133,.12);
   }
   h1 { margin: 0 0 6px; font-size: 20px; }
+  body.embed { min-height: 0; padding: 0; background: #fff; }
+  body.embed main { max-width: none; padding: 14px 16px 20px; border-radius: 0; box-shadow: none; }
+  body.embed h1 { display: none; }
   p.hint { margin: 0 0 20px; color: #5b7c8d; font-size: 13px; line-height: 1.6; }
   details {
     margin-bottom: 24px;
@@ -218,6 +221,7 @@
 </div>
 
 <script>
+if (new URLSearchParams(location.search).has("embed")) document.body.classList.add("embed");
 const OWNER = "s2ndrome";
 const REPO = "code";
 const BRANCH = "main";
@@ -469,7 +473,9 @@ categorySelect.addEventListener("change", () => {
   resetFields();
 });
 
-loadListBtn.addEventListener("click", async () => {
+loadListBtn.addEventListener("click", () => loadList(null));
+
+async function loadList(selectId) {
   const token = tokenInput.value.trim();
   if (!token) { setStatus("토큰을 입력해주세요.", "error"); return; }
   localStorage.setItem("code_gh_token", token);
@@ -498,13 +504,25 @@ loadListBtn.addEventListener("click", async () => {
     });
     itemPicker.hidden = false;
     setStatus(`${currentList.length}개 불러왔어요. 수정할 글을 골라주세요.`, "done");
+    const idx = selectId != null ? currentList.findIndex(it => it.id === selectId) : -1;
+    if (idx >= 0) itemSelect.value = String(idx);
     itemSelect.dispatchEvent(new Event("change"));
   } catch (err) {
     setStatus(err.message, "error");
   } finally {
     loadListBtn.disabled = false;
   }
-});
+}
+
+// 홈페이지 글 창의 "수정" 버튼으로 열리면 (?cat=log&id=제목) 그 글을 바로 불러와요
+(function openFromQuery() {
+  const q = new URLSearchParams(location.search);
+  const cat = q.get("cat"), id = q.get("id");
+  if (!cat || !id || ![...categorySelect.options].some(o => o.value === cat)) return;
+  categorySelect.value = cat;
+  categorySelect.dispatchEvent(new Event("change"));
+  if (tokenInput.value.trim()) loadList(id);
+})();
 
 itemSelect.addEventListener("change", async () => {
   const cat = categorySelect.value;

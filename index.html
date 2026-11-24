@@ -3,61 +3,151 @@
 <head>
 <meta charset="UTF-8">
 <base href="/">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <script>/* 404.html이 넘겨준 주소(/log/3 같은)를 주소창에 되돌려 놓아요 */(function(){try{var p=new URLSearchParams(location.search).get("p");if(p&&p.charAt(0)==="/")history.replaceState(null,"",p+location.hash);}catch(e){}})();</script>
-<title>CODE Desktop</title>
+<title>C:\ARCHIVE</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Galmuri11&family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Audiowide&family=Silkscreen&family=VT323&family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
 <link rel="stylesheet" href="style.css">
 <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
 </head>
 <body>
 
-<span class="sparkle s1" aria-hidden="true"></span>
-<span class="sparkle s2" aria-hidden="true"></span>
-<span class="sparkle s3" aria-hidden="true"></span>
-<span class="sparkle s4" aria-hidden="true"></span>
-
-<div class="browser-bar">
-  <div class="browser-chrome">
-    <span class="browser-dots"><span></span><span></span><span></span></span>
-    <span class="browser-url" id="browserUrl">https://dongha-loves-cloud.kr</span>
-  </div>
+<!-- ===== 바탕화면 장식 (창 뒤에 깔리는 것들) ===== -->
+<div class="wallpaper" aria-hidden="true">
+  <!-- 캐릭터 컷아웃: img/cutout.png (투명 배경 세로형 PNG)를 올리면 자동으로 보여요. 파일이 없으면 숨겨져요. -->
+  <div class="cutout"><img src="img/cutout.png" alt="" onerror="this.parentNode.hidden=true"></div>
+  <pre class="bg-code" id="bgCode"></pre>
+  <div class="logo"><span class="logo-drv">C:\</span><br>ARCHIVE</div>
 </div>
 
-<div class="desktop-icons">
-  <button class="dicon" data-open-target="profileWin"><img class="dicon-glyph" src="img/IDENTITY.png" alt=""><span class="dicon-label">IDENTITY</span></button>
-  <button class="dicon" data-open-target="galleryWin"><img class="dicon-glyph" src="img/TRACK_.png" alt=""><span class="dicon-label">ARCHIVE</span></button>
-  <button class="dicon" data-open-target="chatWin"><img class="dicon-glyph" src="img/RECORD.png" alt=""><span class="dicon-label">RECORD</span></button>
-  <button class="dicon" data-open-target="logWin"><img class="dicon-glyph" src="img/LOG.png" alt=""><span class="dicon-label">LOG</span></button>
-  <button class="dicon" data-open-target="pairWin"><img class="dicon-glyph" src="img/PAIR.png" alt=""><span class="dicon-label">PAIR</span></button>
-  <button class="dicon" data-open-target="bgmWidget"><img class="dicon-glyph" src="img/TRACK.png" alt=""><span class="dicon-label">TRACK</span></button>
-</div>
+<!-- ===== 바탕화면 아이콘 ===== -->
+<nav class="desktop-icons" aria-label="바탕화면">
+  <button class="dicon" data-open-target="pairWin"><span class="dicon-glyph" data-ico="folder"></span><span class="dicon-label">PAIRS</span></button>
+  <button class="dicon" data-open-target="galleryWin"><span class="dicon-glyph" data-ico="pc"></span><span class="dicon-label">ARCHIVE</span></button>
+  <button class="dicon" data-open-target="logWin"><span class="dicon-glyph" data-ico="doc"></span><span class="dicon-label">LOG</span></button>
+  <button class="dicon" data-open-target="chatWin"><span class="dicon-glyph" data-ico="chat"></span><span class="dicon-label">RECORD</span></button>
+  <button class="dicon" data-open-target="trackWin"><span class="dicon-glyph" data-ico="cd"></span><span class="dicon-label">TRACK</span></button>
+  <button class="dicon" data-open-target="paintWin"><span class="dicon-glyph" data-ico="paint"></span><span class="dicon-label">PAINT</span></button>
+  <button class="dicon" data-open-target="linksWin"><span class="dicon-glyph" data-ico="globe"></span><span class="dicon-label">LINKS</span></button>
+  <!-- 관리: 이 저장소에 쓸 수 있는 토큰이 있는 브라우저에서만 보여요 -->
+  <button class="dicon" data-open-target="adminWin" id="adminIcon" hidden><span class="dicon-glyph" data-ico="gear"></span><span class="dicon-label">ADMIN</span></button>
+</nav>
 
-<div class="desktop">
+<div class="desktop" id="desktop">
 
-  <section class="win" id="profileWin" data-win="profileWin">
-    <div class="win-title">
-      <span class="win-title-label"><span class="win-title-icon" style="background:#4FB6EF"></span>ᜊ(ᐡ ̳>𖥦< ̳ᐡ)ᜊ</span>
-      <span class="win-btns"><span>_</span><span>□</span><span class="win-close" data-target="profileWin" role="button" tabindex="0" aria-label="프로필 닫기">×</span></span>
-    </div>
-    <div class="win-body">
-      <div class="profile-banner"></div>
-      <div class="avatar-wrap">
-        <div class="profile-avatar" style="background-image:url('img/3321.png')"></div>
-        <span class="avatar-sticker" aria-hidden="true"></span>
+  <!-- ===== TRACK : 유튜브 미디어 플레이어 ===== -->
+  <section class="win" id="trackWin" data-win="trackWin" data-title="Media Player" data-ico="cd" hidden>
+    <div class="win-title"><span class="win-title-label"><span class="win-ico" data-ico="cd"></span>Media Player</span><span class="win-btns"></span></div>
+    <div class="win-menu"><span><u>F</u>ile</span><span><u>V</u>iew</span><span><u>P</u>lay</span><span><u>T</u>ools</span><span><u>H</u>elp</span><a class="win-menu-right" id="mpOpenYt" target="_blank" rel="noopener">YouTube에서 열기 ↗</a></div>
+    <div class="win-body mp-body">
+      <div class="mp-main">
+        <div class="mp-screen">
+          <div id="ytPlayer"></div>
+          <button class="mp-idle" id="mpIdle" type="button"><span class="mp-idle-btn">▶</span><span class="mp-idle-txt">재생하려면 누르세요</span></button>
+        </div>
+        <div class="mp-list">
+          <div class="mp-list-head pixel">PLAYLIST <span id="mpCount"></span></div>
+          <ol class="mp-tracks" id="mpTracks"><li class="mp-empty">재생목록 불러오는 중…</li></ol>
+        </div>
       </div>
-      <div class="profile-title">
-        <div class="profile-nick">쫀따남자애호가</div>
+      <div class="mp-ctrl">
+        <button class="mp-btn mp-play" id="mpPlay" type="button" aria-label="재생/일시정지">▶</button>
+        <button class="mp-btn" id="mpPrev" type="button" aria-label="이전 곡">◀◀</button>
+        <button class="mp-btn" id="mpNext" type="button" aria-label="다음 곡">▶▶</button>
+        <div class="mp-seek" id="mpSeek"><i id="mpSeekFill"></i><b id="mpSeekKnob"></b></div>
+        <span class="mp-time pixel" id="mpTime">00:00 / 00:00</span>
+      </div>
+    </div>
+    <div class="win-status"><span id="mpState">Ready</span><span class="pixel" id="mpNow"></span></div>
+  </section>
+
+  <!-- ===== 업로드 진행창 (장식) ===== -->
+  <section class="win win-dialog" id="uploadWin" data-win="uploadWin" data-title="복사 중…" data-notask="1">
+    <div class="win-title"><span class="win-title-label">복사 중…</span><span class="win-btns" data-only="close"></span></div>
+    <div class="win-body up-body">
+      <div class="up-file" id="upFile">archive.log 업로드 중</div>
+      <div class="up-bar" id="upBar"></div>
+      <div class="up-foot"><span id="upLeft">남은 시간: 3초</span><button type="button" class="xp-btn" data-close="uploadWin">취소</button></div>
+    </div>
+  </section>
+
+  <!-- ===== PAIRS ===== -->
+  <section class="win" id="pairWin" data-win="pairWin" data-title="PAIRS" data-ico="folder" hidden>
+    <div class="win-title"><span class="win-title-label"><span class="win-ico" data-ico="folder"></span>PAIRS</span><span class="win-btns"></span></div>
+    <div class="win-menu"><span><u>F</u>ile</span><span><u>E</u>dit</span><span><u>V</u>iew</span><span><u>H</u>elp</span></div>
+    <div class="win-addr"><button type="button" class="addr-up" id="pairUp" aria-label="상위 폴더">↑</button><span class="addr-box" id="pairAddr">C:\ARCHIVE\PAIRS</span></div>
+    <div class="win-body"><div class="folder-grid" id="pairGrid"></div></div>
+    <div class="win-status"><span id="pairCount"></span><span>C:\ARCHIVE</span></div>
+  </section>
+
+  <!-- ===== ARCHIVE (갤러리) ===== -->
+  <section class="win" id="galleryWin" data-win="galleryWin" data-title="ARCHIVE" data-ico="pc" hidden>
+    <div class="win-title"><span class="win-title-label"><span class="win-ico" data-ico="pc"></span>ARCHIVE</span><span class="win-btns"></span></div>
+    <div class="win-body">
+      <div class="gallery-head">
+        <h3 id="galTitle">💻</h3>
+        <span class="gallery-count" id="galCount"></span>
+      </div>
+      <div class="tabs">
+        <button class="tab active" data-cat="1">💻</button>
+        <button class="tab" data-cat="2">🛸</button>
+      </div>
+      <div class="gallery-grid" id="galGrid"></div>
+      <div class="pager">
+        <button class="xp-btn" id="galPrev">‹ PREV</button>
+        <span class="pager-num" id="galPage">1 / 1</span>
+        <button class="xp-btn" id="galNext">NEXT ›</button>
       </div>
     </div>
   </section>
 
-  <section class="win" id="menuWin" data-win="menuWin">
-    <div class="win-title">
-      <span class="win-title-label"><span class="win-title-icon" style="background:#9FE3FF"></span>(:3 っ)з</span>
-      <span class="win-btns"><span>_</span><span>□</span><span class="win-close" data-target="menuWin" role="button" tabindex="0" aria-label="메뉴 닫기">×</span></span>
+  <!-- ===== LOG ===== -->
+  <section class="win" id="logWin" data-win="logWin" data-title="LOG.TXT" data-ico="doc" hidden>
+    <div class="win-title"><span class="win-title-label"><span class="win-ico" data-ico="doc"></span>LOG.TXT</span><span class="win-btns"></span></div>
+    <div class="win-menu"><span><u>F</u>ile</span><span><u>E</u>dit</span><span><u>F</u>ormat</span><span><u>V</u>iew</span><span><u>H</u>elp</span></div>
+    <div class="win-body"><ul class="log-list" id="logList"></ul></div>
+    <div class="win-status"><span id="logCount"></span><span>all pairs</span></div>
+  </section>
+
+  <!-- ===== RECORD (채팅) ===== -->
+  <section class="win" id="chatWin" data-win="chatWin" data-title="RECORD" data-ico="chat" hidden>
+    <div class="win-title"><span class="win-title-label"><span class="win-ico" data-ico="chat"></span>RECORD</span><span class="win-btns"></span></div>
+    <div class="win-body chat-body"><div class="chat-thread" id="chatThread"></div></div>
+  </section>
+
+  <!-- ===== PAINT (그림 방명록) ===== -->
+  <section class="win" id="paintWin" data-win="paintWin" data-title="그림 방명록" data-ico="paint" hidden>
+    <div class="win-title"><span class="win-title-label"><span class="win-ico" data-ico="paint"></span>그림 방명록 - 그림판</span><span class="win-btns"></span></div>
+    <div class="win-menu"><span>파일(<u>F</u>)</span><span>편집(<u>E</u>)</span><span>보기(<u>V</u>)</span><span>이미지(<u>I</u>)</span><span>색(<u>C</u>)</span></div>
+    <div class="win-body paint-body">
+      <div class="paint-main">
+        <div class="paint-tools" id="paintTools">
+          <button type="button" class="pt active" data-tool="pencil" title="연필">✎</button>
+          <button type="button" class="pt" data-tool="brush" title="붓">●</button>
+          <button type="button" class="pt" data-tool="eraser" title="지우개">⌫</button>
+          <button type="button" class="pt" data-tool="undo" title="되돌리기">↶</button>
+          <button type="button" class="pt" data-tool="clear" title="새로 그리기">▢</button>
+        </div>
+        <div class="paint-stage"><canvas id="paintCanvas" width="640" height="360"></canvas></div>
+      </div>
+      <div class="paint-colors">
+        <div class="paint-current" id="paintCurrent"><i></i></div>
+        <div class="paint-palette" id="paintPalette"></div>
+      </div>
+      <form class="paint-form" id="paintForm" autocomplete="off">
+        <label>이름 <input type="text" id="gbName" maxlength="20" placeholder="익명"></label>
+        <label class="paint-msg">한마디 <input type="text" id="gbMsg" maxlength="80" placeholder="한마디 남기기"></label>
+        <button type="submit" class="xp-btn xp-btn-default">방명록에 남기기</button>
+      </form>
     </div>
+    <div class="win-status"><span id="paintState">연필</span><span id="paintNote"></span></div>
+  </section>
+
+  <!-- ===== LINKS ===== -->
+  <section class="win" id="linksWin" data-win="linksWin" data-title="LINKS" data-ico="globe" hidden>
+    <div class="win-title"><span class="win-title-label"><span class="win-ico" data-ico="globe"></span>LINKS</span><span class="win-btns"></span></div>
     <div class="win-body">
       <ul class="menu-list">
         <li><a href="https://luvinfo.me/code" target="_blank" rel="noopener"><span class="m-label"><iconify-icon class="m-icon" icon="solar:gamepad-minimalistic-bold-duotone"></iconify-icon>CORE</span><span class="m-arrow">↗</span></a></li>
@@ -69,121 +159,46 @@
     </div>
   </section>
 
-  <section class="win gallery-win" id="galleryWin" data-win="galleryWin">
-    <div class="win-title">
-      <span class="win-title-label"><span class="win-title-icon" style="background:#2E86C1"></span>!!( ๑>ω•́ )۶</span>
-      <span class="win-btns"><span>_</span><span>□</span><span class="win-close" data-target="galleryWin" role="button" tabindex="0" aria-label="갤러리 닫기">×</span></span>
-    </div>
+  <!-- ===== 글 본문 ===== -->
+  <section class="win" id="postWin" data-win="postWin" data-title="본문" data-ico="doc" hidden>
+    <div class="win-title"><span class="win-title-label"><span class="win-ico" data-ico="doc"></span><span id="postTitle">본문</span></span><span class="win-btns"></span></div>
     <div class="win-body">
-      <div class="gallery-head">
-        <h3 id="galTitle">💻</h3>
-        <span class="gallery-count" id="galCount">14 posts</span>
+      <div class="post-actions">
+        <button class="xp-btn post-back" id="postBack">‹ 목록으로</button>
+        <button class="xp-btn" id="postEdit" hidden>✎ 수정</button>
       </div>
-      <div class="tabs">
-        <button class="tab active" data-cat="1">💻</button>
-        <button class="tab" data-cat="2">🛸</button>
-      </div>
-      <div class="gallery-grid" id="galGrid"></div>
-      <div class="pager">
-        <button id="galPrev">‹ PREV</button>
-        <span class="pager-num" id="galPage">1 / 3</span>
-        <button id="galNext">NEXT ›</button>
-      </div>
-    </div>
-  </section>
-
-  <section class="win" id="chatWin" data-win="chatWin">
-    <div class="win-title">
-      <span class="win-title-label"><span class="win-title-icon" style="background:#63C4EE"></span>૮ ๑ˊᯅˋ๑ ა</span>
-      <span class="win-btns"><span>_</span><span>□</span><span class="win-close" data-target="chatWin" role="button" tabindex="0" aria-label="채팅 닫기">×</span></span>
-    </div>
-    <div class="win-body">
-      <div class="chat-thread" id="chatThread"></div>
-    </div>
-  </section>
-
-  <section class="win" id="logWin" data-win="logWin" hidden>
-    <div class="win-title">
-      <span class="win-title-label"><span class="win-title-icon" style="background:#146485"></span>(:ᘌꇤ⁐ꃳ 三♥</span>
-      <span class="win-btns"><span>_</span><span>□</span><span class="win-close" data-target="logWin" role="button" tabindex="0" aria-label="로그 닫기">×</span></span>
-    </div>
-    <div class="win-body">
-      <ul class="log-list" id="logList"></ul>
-    </div>
-  </section>
-
-  <section class="win" id="pairWin" data-win="pairWin" hidden>
-    <div class="win-title">
-      <span class="win-title-label"><span class="win-title-icon" style="background:#4FB6EF"></span>₍^˶ ╸𖥦  ╸˵^₎⟆</span>
-      <span class="win-btns"><span>_</span><span>□</span><span class="win-close" data-target="pairWin" role="button" tabindex="0" aria-label="Pair 닫기">×</span></span>
-    </div>
-    <div class="win-body">
-      <div class="pair-grid">
-        <div class="pair-card" data-pair-id="character-1" role="button" tabindex="0">
-          <div class="pair-avatar" style="background-image:url('img/pair/character-1.jpg'), linear-gradient(160deg,#FFFFFF,#D9D2FF)"></div>
-          <div class="pair-name">CODE</div>
-          <div class="pair-tagline">C-Class Guide</div>
-        </div>
-        <div class="pair-card" data-pair-id="character-2" role="button" tabindex="0">
-          <div class="pair-avatar" style="background-image:url('img/pair/character-2.jpg'), linear-gradient(160deg,#FFFFFF,#D9D2FF)"></div>
-          <div class="pair-name">CANDY</div>
-          <div class="pair-tagline">S-Class Vanguard</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="win" id="postWin" data-win="postWin" hidden>
-    <div class="win-title">
-      <span class="win-title-label"><span class="win-title-icon" style="background:#7ED2F5"></span>♪( ◜ω◝و(و “</span>
-      <span class="win-btns"><span>_</span><span>□</span><span class="win-close" data-target="postWin" role="button" tabindex="0" aria-label="본문 닫기">×</span></span>
-    </div>
-    <div class="win-body">
-      <button class="post-back" id="postBack">‹ 목록으로</button>
       <div class="post-meta" id="postMeta"></div>
       <div class="post-content" id="postContent"></div>
     </div>
   </section>
 
+  <!-- ===== 관리 (글쓰기 · 글 수정 도구를 창 안에서) ===== -->
+  <section class="win" id="adminWin" data-win="adminWin" data-title="ADMIN" data-ico="gear" hidden>
+    <div class="win-title"><span class="win-title-label"><span class="win-ico" data-ico="gear"></span>ADMIN</span><span class="win-btns"></span></div>
+    <div class="win-menu admin-tabs">
+      <button type="button" class="admin-tab" data-tool="upload">글쓰기</button>
+      <button type="button" class="admin-tab" data-tool="edit">글 수정</button>
+      <button type="button" class="admin-out" id="adminOut" hidden>로그아웃</button>
+    </div>
+    <div class="win-body admin-body"><iframe id="adminFrame" title="관리 도구"></iframe></div>
+  </section>
+
 </div>
 
-<section class="win bgm" id="bgmWidget">
-  <div class="win-title">
-    <span class="win-title-label"><span class="win-title-icon" style="background:#63C4EE"></span>૮₍ •̀ᴥ•́ ₎ა</span>
-    <span class="win-btns"><span class="win-close" data-target="bgmWidget" role="button" tabindex="0" aria-label="브금 닫기">×</span></span>
-  </div>
-  <div class="win-body">
-    <div class="bgm-row">
-      <div class="eq paused" id="bgmEq"><span></span><span></span><span></span><span></span></div>
-      <div class="bgm-meta">
-        <div class="bgm-track" id="bgmTrack"></div>
-        <div class="bgm-sub" id="bgmSub">track 1 / 5</div>
-      </div>
-    </div>
-    <div class="bgm-controls">
-      <button id="bgmPrev" aria-label="이전 곡">◀◀</button>
-      <button id="bgmPlay" aria-label="재생/일시정지">▶</button>
-      <button id="bgmNext" aria-label="다음 곡">▶▶</button>
-      <button id="bgmListToggle" aria-label="재생목록 열기">☰</button>
-    </div>
-    <ul class="bgm-playlist" id="bgmPlaylist" hidden></ul>
-    <audio id="bgmAudio" preload="none"></audio>
-  </div>
-</section>
+<!-- ===== 시작 메뉴 ===== -->
+<div class="start-menu" id="startMenu" hidden>
+  <div class="start-head"><span class="start-head-ico" data-ico="heart"></span>C:\ARCHIVE</div>
+  <ul class="start-list" id="startList"></ul>
+</div>
 
+<!-- ===== 작업 표시줄 ===== -->
 <nav class="taskbar" aria-label="작업 표시줄">
-  <a class="tb-start pixel" href="https://luvinfo.me/code" target="_blank" rel="noopener">INFO</a>
-  <span class="tb-sep"></span>
-  <div class="tb-icons">
-    <span class="tb-icon pixel" data-open-target="profileWin" role="button" tabindex="0">IDENTITY</span>
-    <span class="tb-icon pixel" data-open-target="menuWin" role="button" tabindex="0">Menu</span>
-    <span class="tb-icon pixel" data-open-target="galleryWin" role="button" tabindex="0">ARCHIVE</span>
-    <span class="tb-icon pixel" data-open-target="chatWin" role="button" tabindex="0">RECORD</span>
-    <span class="tb-icon pixel" data-open-target="logWin" role="button" tabindex="0">LOG</span>
-    <span class="tb-icon pixel" data-open-target="pairWin" role="button" tabindex="0">PAIR</span>
-    <span class="tb-icon pixel" data-open-target="bgmWidget" role="button" tabindex="0">TRACK</span>
+  <button class="tb-start" id="tbStart" type="button" aria-expanded="false"><span data-ico="heart"></span>start</button>
+  <div class="tb-tasks" id="tbTasks"></div>
+  <div class="tb-tray">
+    <span class="tb-now pixel" id="tbNow"></span>
+    <span class="tb-clock pixel" id="clock">--:--</span>
   </div>
-  <span class="tb-clock pixel" id="clock">--:--</span>
 </nav>
 
 <script src="script.js"></script>

@@ -23,6 +23,9 @@
     box-shadow: 0 10px 40px rgba(20,100,133,.12);
   }
   h1 { margin: 0 0 6px; font-size: 20px; }
+  body.embed { min-height: 0; padding: 0; background: #fff; }
+  body.embed main { max-width: none; padding: 14px 16px 20px; border-radius: 0; box-shadow: none; }
+  body.embed h1 { display: none; }
   p.hint { margin: 0 0 20px; color: #5b7c8d; font-size: 13px; line-height: 1.6; }
   details {
     margin-bottom: 24px;
@@ -182,6 +185,7 @@
 </div>
 
 <script>
+if (new URLSearchParams(location.search).has("embed")) document.body.classList.add("embed");
 const OWNER = "s2ndrome";
 const REPO = "code";
 const BRANCH = "main";
