@@ -167,6 +167,7 @@ function wireLockGate(locked){
     error.hidden = true;
     try {
       postContent.innerHTML = await decryptLockedPost(locked, password);
+      runScripts(postContent);
     } catch (e) {
       error.hidden = false;
       input.value = '';
@@ -178,6 +179,16 @@ function wireLockGate(locked){
   submit.addEventListener('click', tryUnlock);
   input.addEventListener('keydown', e => { if (e.key === 'Enter') tryUnlock(); });
   input.focus();
+}
+
+function runScripts(container){
+  // innerHTML로 넣은 <script>는 브라우저가 실행하지 않아서, 직접 새 script로 바꿔서 실행시켜요.
+  container.querySelectorAll('script').forEach(old => {
+    const s = document.createElement('script');
+    for (const attr of old.attributes) s.setAttribute(attr.name, attr.value);
+    s.textContent = old.textContent;
+    old.replaceWith(s);
+  });
 }
 
 async function openPost(catPath, meta, title){
@@ -194,6 +205,7 @@ async function openPost(catPath, meta, title){
       wireLockGate(locked);
     } else {
       postContent.innerHTML = html;
+      runScripts(postContent);
     }
   } catch (e) {
     postContent.innerHTML = '<p>본문을 불러오지 못했어요. (서버 없이 파일을 직접 열면 본문을 못 가져와요 — GitHub Pages 등으로 호스팅해서 확인해주세요.)</p>';
