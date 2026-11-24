@@ -384,7 +384,9 @@ document.getElementById("preview-close").addEventListener("click", () => { previ
 previewModal.addEventListener("click", e => { if (e.target === previewModal) previewModal.hidden = true; });
 
 async function getFile(path) {
+  // no-store: 브라우저가 예전 응답(옛날 sha)을 재사용하면 저장할 때 409로 거절돼요
   const res = await fetch(`${API}/${path}?ref=${BRANCH}`, {
+    cache: "no-store",
     headers: { Authorization: `Bearer ${tokenInput.value.trim()}`, Accept: "application/vnd.github+json" }
   });
   if (!res.ok) throw new Error(`${path}을 못 불러왔어요 (${res.status}) — 토큰 권한을 확인해주세요.`);
@@ -407,6 +409,21 @@ async function putFile(path, base64Content, message, sha) {
   if (!res.ok) {
     const detail = await res.json().catch(() => ({}));
     throw new Error(`${path} 저장 실패 (${res.status}): ${detail.message || "알 수 없는 오류"}`);
+  }
+}
+
+// data/*.json은 저장 직전에 새로 읽어서 고쳐요. 그 사이 다른 곳에서 바뀌어서 거절(409)되면 새로 읽어서 다시 해요.
+async function updateJson(path, mutate, message) {
+  for (let attempt = 1; ; attempt++) {
+    const file = await getFile(path);
+    const list = JSON.parse(base64ToUtf8(file.content));
+    mutate(list);
+    try {
+      await putFile(path, utf8ToBase64(JSON.stringify(list, null, 2) + "\n"), message, file.sha);
+      return list;
+    } catch (err) {
+      if (attempt >= 3 || !/\(409\)/.test(err.message)) throw err;
+    }
   }
 }
 
@@ -436,9 +453,10 @@ async function uploadPhoto(token, category) {
   await putFile(imgPath, fileB64, `Add ${category} photo ${id}`);
 
   setStatus(`${dataPath} 업데이트 중…`);
-  list.unshift({ id, label: title, thumb: imgPath });
-  const newJsonText = JSON.stringify(list, null, 2) + "\n";
-  await putFile(dataPath, utf8ToBase64(newJsonText), `Add ${id} to ${category}.json`, jsonFile.sha);
+  await updateJson(dataPath, fresh => {
+    if (fresh.some(it => it.id === id)) throw new Error(`${id} 번호가 방금 다른 곳에서 쓰였어요. 다시 업로드해주세요.`);
+    fresh.unshift({ id, label: title, thumb: imgPath });
+  }, `Add ${id} to ${category}.json`);
 
   setStatus("본문 글 생성 중…");
   let postHtml = `<img src="${imgPath}" alt="${escapeHtml(title)}">\n`;
@@ -462,25 +480,18 @@ async function uploadLog(token) {
   if (!title || !excerpt || !content) throw new Error("제목, 요약, 내용을 모두 입력해주세요.");
   if (locked && !password) throw new Error("잠그려면 비밀번호도 입력해주세요.");
 
-  setStatus("data/log.json 불러오는 중…");
-  const jsonFile = await getFile("data/log.json");
-  const list = JSON.parse(base64ToUtf8(jsonFile.content));
-
-  if (list.some(item => item.id === title)) {
-    throw new Error(`이미 "${title}"라는 제목의 글이 있어요. 다른 제목을 써주세요.`);
-  }
-
   const entry = { id: title, date, title, excerpt };
   if (locked) entry.locked = true;
+  const postBody = locked ? await encryptPost(password, content) : content;
 
   setStatus("data/log.json 업데이트 중…");
-  list.unshift(entry);
-  const newJsonText = JSON.stringify(list, null, 2) + "\n";
-  await putFile("data/log.json", utf8ToBase64(newJsonText), `Add "${title}" to log.json`, jsonFile.sha);
+  await updateJson("data/log.json", fresh => {
+    if (fresh.some(item => item.id === title)) throw new Error(`이미 "${title}"라는 제목의 글이 있어요. 다른 제목을 써주세요.`);
+    fresh.unshift(entry);
+  }, `Add "${title}" to log.json`);
 
   setStatus("본문 글 생성 중…");
-  const postBody = locked ? await encryptPost(password, content) : content;
-  await putFile(`posts/log/${title}.html`, utf8ToBase64(postBody), `Add log post: ${title}`);
+  await putFile(`posts/log/${encodeURIComponent(title)}.html`, utf8ToBase64(postBody), `Add log post: ${title}`);
 
   setStatus(`완료! "${title}" 글이 등록됐어요.`, "done");
   logTitleInput.value = "";

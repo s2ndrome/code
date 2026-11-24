@@ -259,8 +259,7 @@ const status = document.getElementById("status");
 const savedToken = localStorage.getItem("code_gh_token");
 if (savedToken) tokenInput.value = savedToken;
 
-let currentList = null;      // full data/<cat>.json array, kept in sync
-let currentListSha = null;   // sha of data/<cat>.json
+let currentList = null;      // data/<cat>.json array as loaded (saves re-read it fresh)
 let currentItem = null;      // the selected item object
 let currentPostSha = null;   // sha of posts/<cat>/<id>.html
 
@@ -419,7 +418,9 @@ async function decryptLockedPost(locked, password) {
 }
 
 async function getFile(path) {
+  // no-store: 브라우저가 예전 응답(옛날 sha)을 재사용하면 저장할 때 409로 거절돼요
   const res = await fetch(`${API}/${path}?ref=${BRANCH}`, {
+    cache: "no-store",
     headers: { Authorization: `Bearer ${tokenInput.value.trim()}`, Accept: "application/vnd.github+json" }
   });
   if (!res.ok) throw new Error(`${path}을 못 불러왔어요 (${res.status}) — 토큰 권한을 확인해주세요.`);
@@ -437,6 +438,25 @@ async function putFile(path, base64Content, message, sha) {
     const detail = await res.json().catch(() => ({}));
     throw new Error(`${path} 저장 실패 (${res.status}): ${detail.message || "알 수 없는 오류"}`);
   }
+}
+// data/*.json은 저장 직전에 새로 읽어서 고쳐요. 그 사이 다른 곳에서 바뀌어서 거절(409)되면 새로 읽어서 다시 해요.
+async function updateJson(path, mutate, message) {
+  for (let attempt = 1; ; attempt++) {
+    const file = await getFile(path);
+    const list = JSON.parse(base64ToUtf8(file.content));
+    mutate(list);
+    try {
+      await putFile(path, utf8ToBase64(JSON.stringify(list, null, 2) + "\n"), message, file.sha);
+      return list;
+    } catch (err) {
+      if (attempt >= 3 || !/\(409\)/.test(err.message)) throw err;
+    }
+  }
+}
+function indexById(list, id) {
+  const i = list.findIndex(it => it.id === id);
+  if (i < 0) throw new Error(`목록에서 "${id}" 글을 못 찾았어요. 목록을 다시 불러와주세요.`);
+  return i;
 }
 async function deleteFile(path, message, sha) {
   const res = await fetch(`${API}/${path}`, {
@@ -487,7 +507,6 @@ async function loadList(selectId) {
     setStatus(`data/${cat}.json 불러오는 중…`);
     const jsonFile = await getFile(`data/${cat}.json`);
     currentList = JSON.parse(base64ToUtf8(jsonFile.content));
-    currentListSha = jsonFile.sha;
 
     itemSelect.innerHTML = "";
     if (currentList.length === 0) {
@@ -642,8 +661,10 @@ async function saveGalleryItem(cat) {
   await putFile(`posts/${cat}/${encodeURIComponent(item.id)}.html`, utf8ToBase64(rawHtml), `Edit post ${item.id}`, currentPostSha);
 
   setStatus(`data/${cat}.json 업데이트 중…`);
-  currentList[idx] = { ...item, label: newTitle, thumb: thumbPath };
-  await putFile(`data/${cat}.json`, utf8ToBase64(JSON.stringify(currentList, null, 2) + "\n"), `Edit ${item.id} in ${cat}.json`, currentListSha);
+  await updateJson(`data/${cat}.json`, fresh => {
+    const i = indexById(fresh, item.id);
+    fresh[i] = { ...fresh[i], label: newTitle, thumb: thumbPath };
+  }, `Edit ${item.id} in ${cat}.json`);
 
   setStatus(`완료! "${newTitle}" 수정됐어요.`, "done");
   loadListBtn.click();
@@ -678,8 +699,9 @@ async function saveLogItem(cat) {
   setStatus("data/log.json 업데이트 중…");
   const newEntry = { id: newTitle, date: newDate, title: newTitle, excerpt: newExcerpt };
   if (locked) newEntry.locked = true;
-  currentList[idx] = newEntry;
-  await putFile("data/log.json", utf8ToBase64(JSON.stringify(currentList, null, 2) + "\n"), `Edit "${newTitle}" in log.json`, currentListSha);
+  await updateJson("data/log.json", fresh => {
+    fresh[indexById(fresh, item.id)] = newEntry;
+  }, `Edit "${newTitle}" in log.json`);
 
   setStatus(`완료! "${newTitle}" 수정됐어요.`, "done");
   loadListBtn.click();
@@ -690,7 +712,6 @@ deleteBtn.addEventListener("click", async () => {
   if (!confirm(`"${isGallery(categorySelect.value) ? currentItem.label : currentItem.title}" 글을 정말 삭제할까요? 되돌릴 수 없어요.`)) return;
 
   const cat = categorySelect.value;
-  const idx = Number(itemSelect.value);
   saveBtn.disabled = true;
   deleteBtn.disabled = true;
   try {
@@ -704,8 +725,11 @@ deleteBtn.addEventListener("click", async () => {
     }
 
     setStatus(`data/${cat}.json 업데이트 중…`);
-    currentList.splice(idx, 1);
-    await putFile(`data/${cat}.json`, utf8ToBase64(JSON.stringify(currentList, null, 2) + "\n"), `Remove ${currentItem.id} from ${cat}.json`, currentListSha);
+    const removeId = currentItem.id;
+    await updateJson(`data/${cat}.json`, fresh => {
+      const i = fresh.findIndex(it => it.id === removeId);
+      if (i >= 0) fresh.splice(i, 1);
+    }, `Remove ${removeId} from ${cat}.json`);
 
     setStatus("삭제됐어요.", "done");
     loadListBtn.click();
