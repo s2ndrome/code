@@ -208,7 +208,8 @@ svg.pi{image-rendering:pixelated;shape-rendering:crispEdges;display:block}
 .gallery-head h3{margin:0;font-size:14px}
 .gallery-count{font-family:var(--pixel);font-size:10px;color:var(--i4)}
 .tabs{display:flex;gap:3px;margin-bottom:12px;border-bottom:1px solid var(--i4)}
-.tab{padding:4px 14px;border:1px solid var(--i4);border-bottom:0;border-radius:3px 3px 0 0;background:var(--i1);cursor:pointer;position:relative;top:1px}
+.tab{flex:1 1 0;min-width:0;padding:4px 8px;font-family:var(--pixel);font-size:10px;color:var(--i6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:1px solid var(--i4);border-bottom:0;border-radius:3px 3px 0 0;background:var(--i1);cursor:pointer;position:relative;top:1px}
+.tab.active{color:var(--i7)}
 .tab.active{background:#fff}
 .gallery-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .thumb{aspect-ratio:1/1;padding:3px;background:#fff;border:1px solid var(--i4);box-shadow:2px 2px 0 var(--i2);cursor:pointer;min-width:0}
@@ -361,6 +362,7 @@ svg.pi{image-rendering:pixelated;shape-rendering:crispEdges;display:block}
   .paint-form label:first-child{flex:1}
   .paint-form label:first-child input{width:100%}
   .gallery-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .tab{padding:4px 3px;font-size:9px;letter-spacing:-.02em}
   .tb-task{flex-basis:120px;font-size:11px}
   .tb-now{display:none}
   .admin-body iframe{height:70vh;height:70dvh;flex:none}

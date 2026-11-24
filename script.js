@@ -321,19 +321,36 @@ setInterval(tickClock, 15000);
 /* ---------------------------------------------------------
    6. 글 · 아카이브 · 로그 (data/*.json, posts/<cat>/<id>.html)
    --------------------------------------------------------- */
-let gallery1 = [];
-let gallery2 = [];
+/* ARCHIVE · LOG 는 페어별로 섹션(탭) 3개예요. 탭 이름은 PAIRS 목록의 title을 써요.
+   ARCHIVE n번 = data/gallery<n>.json, LOG는 data/log.json 한 파일에 글마다 "pair": "1"~"3" */
+const SECTION_COUNT = 3;
+function sectionName(n){ return PAIRS[n - 1] ? PAIRS[n - 1].title : 'SECTION ' + n; }
+const galleries = { 1: [], 2: [], 3: [] };
 let logItems = [];
-const galPage = { 1: 1, 2: 1 };
+const galPage = { 1: 1, 2: 1, 3: 1 };
 let activeCat = 1;
+let activeLogPair = 1;
+function logList(p){ return logItems.filter(x => String(x.pair || 1) === String(p)); }
+function buildTabs(boxId, onPick){
+  const box = document.getElementById(boxId);
+  for (let n = 1; n <= SECTION_COUNT; n++) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'tab';
+    b.dataset.n = n;
+    b.textContent = sectionName(n);
+    b.addEventListener('click', () => onPick(n));
+    box.appendChild(b);
+  }
+}
+function markTabs(boxId, n){ document.querySelectorAll('#' + boxId + ' .tab').forEach(t => t.classList.toggle('active', Number(t.dataset.n) === n)); }
 
 async function fetchJSON(path){
   const res = await fetch(path);
   if (!res.ok) throw new Error(path + ' (' + res.status + ')');
   return res.json();
 }
-function galleryList(cat){ return cat === 1 ? gallery1 : gallery2; }
-function galleryEmoji(cat){ return cat === 1 ? '💻' : '🛸'; }
+function galleryList(cat){ return galleries[cat] || []; }
 
 const postWin = document.getElementById('postWin');
 const postMeta = document.getElementById('postMeta');
@@ -435,10 +452,11 @@ async function openPost(catPath, meta, id, path, title){
   }
 }
 function openGalleryPost(cat, item){
-  openPost('gallery' + cat, 'ARCHIVE · ' + galleryEmoji(cat), item.id, '/archive/' + cat + '/' + numOf(galleryList(cat), item.id), item.label || item.id);
+  openPost('gallery' + cat, 'ARCHIVE · ' + sectionName(cat), item.id, '/archive/' + cat + '/' + numOf(galleryList(cat), item.id), item.label || item.id);
 }
 function openLogPost(item){
-  openPost('log', 'LOG · ' + item.date, item.id, '/log/' + numOf(logItems, item.id), item.title || item.id);
+  const p = Number(item.pair) || 1;
+  openPost('log', 'LOG · ' + sectionName(p) + ' · ' + item.date, item.id, '/log/' + p + '/' + numOf(logList(p), item.id), item.title || item.id);
 }
 document.getElementById('postBack').addEventListener('click', () => {
   closeWin('postWin');
@@ -478,7 +496,7 @@ async function checkAdmin(){
   } catch (e) { setAdmin(false); }
 }
 function syncPostEdit(){
-  postEdit.hidden = !(isAdmin && currentPost && /^(gallery1|gallery2|log)$/.test(currentPost.catPath));
+  postEdit.hidden = !(isAdmin && currentPost && /^(gallery[123]|log)$/.test(currentPost.catPath));
 }
 function setAdminTool(tool, query){
   document.querySelectorAll('.admin-tab').forEach(b => b.classList.toggle('is-on', b.dataset.tool === tool));
@@ -563,8 +581,8 @@ renderPairs(null);
 function totalPages(cat){ return Math.max(1, Math.ceil(galleryList(cat).length / 6)); }
 function renderGallery(cat){
   activeCat = cat;
-  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.cat == cat));
-  document.getElementById('galTitle').textContent = galleryEmoji(cat);
+  markTabs('galTabs', cat);
+  document.getElementById('galTitle').textContent = sectionName(cat);
   const list = galleryList(cat);
   document.getElementById('galCount').textContent = list.length + ' posts';
   const grid = document.getElementById('galGrid');
@@ -589,22 +607,24 @@ function renderGallery(cat){
   document.getElementById('galPrev').disabled = galPage[cat] <= 1;
   document.getElementById('galNext').disabled = galPage[cat] >= tp;
 }
-document.querySelectorAll('.tab').forEach(btn => {
-  btn.addEventListener('click', () => { renderGallery(Number(btn.dataset.cat)); nav('/archive/' + btn.dataset.cat); });
-});
+buildTabs('galTabs', n => { renderGallery(n); nav('/archive/' + n); });
 document.getElementById('galPrev').addEventListener('click', () => { if (galPage[activeCat] > 1) { galPage[activeCat]--; renderGallery(activeCat); } });
 document.getElementById('galNext').addEventListener('click', () => { if (galPage[activeCat] < totalPages(activeCat)) { galPage[activeCat]++; renderGallery(activeCat); } });
 
 /* ---- LOG ---- */
-function renderLog(){
+function renderLog(p){
+  activeLogPair = p;
+  markTabs('logTabs', p);
+  const items = logList(p);
   const list = document.getElementById('logList');
   list.innerHTML = '';
-  document.getElementById('logCount').textContent = logItems.length + ' log(s)';
-  if (logItems.length === 0) {
+  document.getElementById('logCount').textContent = items.length + ' log(s)';
+  document.getElementById('logPairName').textContent = sectionName(p);
+  if (items.length === 0) {
     list.innerHTML = '<li class="gallery-empty">아직 쓴 글이 없어요.</li>';
     return;
   }
-  logItems.forEach(item => {
+  items.forEach(item => {
     const li = document.createElement('li');
     li.className = 'log-item';
     li.setAttribute('role', 'button');
@@ -619,6 +639,7 @@ function renderLog(){
     list.appendChild(li);
   });
 }
+buildTabs('logTabs', n => { renderLog(n); nav('/log/' + n); });
 
 /* ---- 주소로 바로 들어왔을 때 ---- */
 function route(){
@@ -629,17 +650,21 @@ function route(){
   try {
     openWin(winId);
     if (winId === 'galleryWin') {
-      const cat = /^[12]$/.test(seg[1]) ? Number(seg[1]) : 1;
+      const cat = /^[1-3]$/.test(seg[1]) ? Number(seg[1]) : 1;
       renderGallery(cat);
       if (seg[2]) {
         const id = idOf(galleryList(cat), seg[2]);
         const item = id && galleryList(cat).find(x => x.id === id);
-        if (item) openPost('gallery' + cat, 'ARCHIVE · ' + galleryEmoji(cat), item.id, '/archive/' + cat + '/' + seg[2], item.label || item.id);
+        if (item) openGalleryPost(cat, item);
       }
-    } else if (winId === 'logWin' && seg[1]) {
-      const id = idOf(logItems, seg[1]);
-      const item = id && logItems.find(x => x.id === id);
-      if (item) openLogPost(item);
+    } else if (winId === 'logWin') { // /log/<페어 1~3>/<그 페어 안 글 번호>
+      const p = /^[1-3]$/.test(seg[1]) ? Number(seg[1]) : 1;
+      renderLog(p);
+      if (seg[2]) {
+        const id = idOf(logList(p), seg[2]);
+        const item = id && logItems.find(x => x.id === id);
+        if (item) openLogPost(item);
+      }
     } else if (winId === 'pairWin') {
       if (seg[0] === 'pair' && seg[1]) {
         const m = ALL_MEMBERS[parseInt(seg[1], 10) - 1];
@@ -1047,17 +1072,15 @@ function playChatThread(){
   if (!isMobile() && !/^\/[^/]/.test(location.pathname)) openWin('trackWin');
   refocusTop();
 
-  try {
-    [gallery1, gallery2, logItems] = await Promise.all([
-      fetchJSON('data/gallery1.json'),
-      fetchJSON('data/gallery2.json'),
-      fetchJSON('data/log.json')
-    ]);
-  } catch (e) {
-    document.getElementById('galGrid').innerHTML = '<div class="gallery-empty">데이터를 불러오지 못했어요. 서버(GitHub Pages 등)로 열어주세요.</div>';
-  }
+  const none = () => [];
+  [galleries[1], galleries[2], galleries[3], logItems] = await Promise.all([
+    fetchJSON('data/gallery1.json').catch(none),
+    fetchJSON('data/gallery2.json').catch(none),
+    fetchJSON('data/gallery3.json').catch(none),
+    fetchJSON('data/log.json').catch(none)
+  ]);
   renderGallery(1);
-  renderLog();
+  renderLog(1);
   startUpload();
   route(); // 주소로 바로 들어온 경우 그 창·글 열기
 })();

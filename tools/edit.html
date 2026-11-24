@@ -115,8 +115,10 @@
 
   <label for="category">카테고리</label>
   <select id="category">
-    <option value="gallery1">GALLERY 1 (사진)</option>
-    <option value="gallery2">GALLERY 2 (사진)</option>
+    <!-- 사진 칸 1·2·3 = 홈페이지 ARCHIVE 탭 1·2·3 (페어 순서, script.js의 PAIRS와 맞춰요) -->
+    <option value="gallery1">ARCHIVE 1 · CODE × CANDY (사진)</option>
+    <option value="gallery2">ARCHIVE 2 · NINE × ROMY (사진)</option>
+    <option value="gallery3">ARCHIVE 3 · DEMON × CHERRY (사진)</option>
     <option value="log">LOG (글)</option>
   </select>
 
@@ -158,6 +160,13 @@
   <div class="field-group" id="log-edit-fields" hidden>
     <label for="log-title">제목 (바꾸면 새 제목으로 파일이 다시 만들어져요)</label>
     <input type="text" id="log-title">
+
+    <label for="log-pair">페어 (LOG 탭)</label>
+    <select id="log-pair">
+      <option value="1">1 · CODE × CANDY</option>
+      <option value="2">2 · NINE × ROMY</option>
+      <option value="3">3 · DEMON × CHERRY</option>
+    </select>
 
     <div class="row">
       <div>
@@ -245,6 +254,7 @@ const photoRawInput = document.getElementById("photo-raw");
 const logFields = document.getElementById("log-edit-fields");
 const logTitleInput = document.getElementById("log-title");
 const logDateInput = document.getElementById("log-date");
+const logPairInput = document.getElementById("log-pair");
 const logExcerptInput = document.getElementById("log-excerpt");
 const logContentInput = document.getElementById("log-content");
 const logLockCheck = document.getElementById("log-lock-check");
@@ -263,7 +273,7 @@ let currentList = null;      // data/<cat>.json array as loaded (saves re-read i
 let currentItem = null;      // the selected item object
 let currentPostSha = null;   // sha of posts/<cat>/<id>.html
 
-function isGallery(cat){ return cat === "gallery1" || cat === "gallery2"; }
+function isGallery(cat){ return /^gallery[123]$/.test(cat); }
 
 function setStatus(text, kind) {
   status.textContent = text;
@@ -517,7 +527,7 @@ async function loadList(selectId) {
     currentList.forEach((item, i) => {
       const opt = document.createElement("option");
       opt.value = i;
-      const label = isGallery(cat) ? item.label : item.title;
+      const label = isGallery(cat) ? item.label : "[" + (item.pair || "1") + "] " + item.title;
       opt.textContent = (item.locked ? "🔒 " : "") + label;
       itemSelect.appendChild(opt);
     });
@@ -590,6 +600,7 @@ async function loadLogItem(cat, item, password) {
     }
 
     logTitleInput.value = item.title;
+    logPairInput.value = String(item.pair || "1");
     logDateInput.value = (item.date || "").replace(/\./g, "-");
     logExcerptInput.value = item.excerpt || "";
     logContentInput.value = content;
@@ -697,7 +708,7 @@ async function saveLogItem(cat) {
   }
 
   setStatus("data/log.json 업데이트 중…");
-  const newEntry = { id: newTitle, date: newDate, title: newTitle, excerpt: newExcerpt };
+  const newEntry = { id: newTitle, date: newDate, title: newTitle, excerpt: newExcerpt, pair: logPairInput.value };
   if (locked) newEntry.locked = true;
   await updateJson("data/log.json", fresh => {
     fresh[indexById(fresh, item.id)] = newEntry;

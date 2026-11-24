@@ -88,13 +88,11 @@
     <div class="win-title"><span class="win-title-label"><span class="win-ico" data-ico="pc"></span>ARCHIVE</span><span class="win-btns"></span></div>
     <div class="win-body">
       <div class="gallery-head">
-        <h3 id="galTitle">💻</h3>
+        <h3 id="galTitle"></h3>
         <span class="gallery-count" id="galCount"></span>
       </div>
-      <div class="tabs">
-        <button class="tab active" data-cat="1">💻</button>
-        <button class="tab" data-cat="2">🛸</button>
-      </div>
+      <!-- 탭은 script.js의 PAIRS 목록으로 만들어요 (페어 1·2·3) -->
+      <div class="tabs" id="galTabs"></div>
       <div class="gallery-grid" id="galGrid"></div>
       <div class="pager">
         <button class="xp-btn" id="galPrev">‹ PREV</button>
@@ -108,8 +106,8 @@
   <section class="win" id="logWin" data-win="logWin" data-title="LOG.TXT" data-ico="doc" hidden>
     <div class="win-title"><span class="win-title-label"><span class="win-ico" data-ico="doc"></span>LOG.TXT</span><span class="win-btns"></span></div>
     <div class="win-menu"><span><u>F</u>ile</span><span><u>E</u>dit</span><span><u>F</u>ormat</span><span><u>V</u>iew</span><span><u>H</u>elp</span></div>
-    <div class="win-body"><ul class="log-list" id="logList"></ul></div>
-    <div class="win-status"><span id="logCount"></span><span>all pairs</span></div>
+    <div class="win-body"><div class="tabs" id="logTabs"></div><ul class="log-list" id="logList"></ul></div>
+    <div class="win-status"><span id="logCount"></span><span id="logPairName"></span></div>
   </section>
 
   <!-- ===== RECORD (채팅) ===== -->

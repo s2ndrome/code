@@ -8,5 +8,15 @@
     "id": "g1-02",
     "label": "곰",
     "thumb": "img/gallery1/g1-02.jpeg"
+  },
+  {
+    "id": "g1-05",
+    "label": "롱",
+    "thumb": "img/gallery1/g1-05.png"
+  },
+  {
+    "id": "g1-04",
+    "label": "C",
+    "thumb": "img/gallery1/g1-04.jpeg"
   }
 ]

@@ -3,42 +3,49 @@
     "id": "CHERRY PHONE",
     "date": "2026.11.24",
     "title": "CHERRY PHONE",
-    "excerpt": "체리 핸드폰"
+    "excerpt": "체리 핸드폰",
+    "pair": "3"
   },
   {
     "id": "DEMON PHONE",
     "date": "2026.11.24",
     "title": "DEMON PHONE",
-    "excerpt": "데몬 핸드폰"
+    "excerpt": "데몬 핸드폰",
+    "pair": "3"
   },
   {
     "id": "ROMY PHONE",
     "date": "2026.11.24",
     "title": "ROMY PHONE",
-    "excerpt": "로미 핸드폰"
+    "excerpt": "로미 핸드폰",
+    "pair": "2"
   },
   {
     "id": "NINE PHONE",
     "date": "2026.11.24",
     "title": "NINE PHONE",
-    "excerpt": "나인 핸드폰"
+    "excerpt": "나인 핸드폰",
+    "pair": "2"
   },
   {
     "id": "CANDY PHONE",
     "date": "2026.11.24",
     "title": "CANDY PHONE",
-    "excerpt": "송구름 핸드폰"
+    "excerpt": "송구름 핸드폰",
+    "pair": "1"
   },
   {
     "id": "CODE PHONE",
     "date": "2026.11.24",
     "title": "CODE PHONE",
-    "excerpt": "이동하 핸드폰"
+    "excerpt": "이동하 핸드폰",
+    "pair": "1"
   },
   {
     "id": "송구름의 첫 뽀뽀는 나여야만 했는데",
     "date": "2026.09.02",
     "title": "송구름의 첫 뽀뽀는 나여야만 했는데",
-    "excerpt": "어릴 때 사진"
+    "excerpt": "어릴 때 사진",
+    "pair": "1"
   }
 ]

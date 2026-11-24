@@ -112,8 +112,10 @@
 
   <label for="category">카테고리</label>
   <select id="category">
-    <option value="gallery1">GALLERY 1 (사진)</option>
-    <option value="gallery2">GALLERY 2 (사진)</option>
+    <!-- 사진 칸 1·2·3 = 홈페이지 ARCHIVE 탭 1·2·3 (페어 순서, script.js의 PAIRS와 맞춰요) -->
+    <option value="gallery1">ARCHIVE 1 · CODE × CANDY (사진)</option>
+    <option value="gallery2">ARCHIVE 2 · NINE × ROMY (사진)</option>
+    <option value="gallery3">ARCHIVE 3 · DEMON × CHERRY (사진)</option>
     <option value="log">LOG (글)</option>
   </select>
 
@@ -131,6 +133,13 @@
   <div class="field-group" id="log-fields" hidden>
     <label for="log-title">제목</label>
     <input type="text" id="log-title" placeholder="예: 오늘의 일기">
+
+    <label for="log-pair">페어 (LOG 탭)</label>
+    <select id="log-pair">
+      <option value="1">1 · CODE × CANDY</option>
+      <option value="2">2 · NINE × ROMY</option>
+      <option value="3">3 · DEMON × CHERRY</option>
+    </select>
 
     <label for="log-date">날짜</label>
     <input type="date" id="log-date">
@@ -200,6 +209,7 @@ const photoTitleInput = document.getElementById("photo-title");
 const photoCaptionInput = document.getElementById("photo-caption");
 const logTitleInput = document.getElementById("log-title");
 const logDateInput = document.getElementById("log-date");
+const logPairInput = document.getElementById("log-pair");
 const logExcerptInput = document.getElementById("log-excerpt");
 const logContentInput = document.getElementById("log-content");
 const logLockCheck = document.getElementById("log-lock-check");
@@ -217,7 +227,7 @@ function todayStr(){
 }
 logDateInput.value = todayStr();
 
-function isGallery(cat){ return cat === "gallery1" || cat === "gallery2"; }
+function isGallery(cat){ return /^gallery[123]$/.test(cat); }
 
 function syncFields(){
   const cat = categorySelect.value;
@@ -438,7 +448,7 @@ async function uploadPhoto(token, category) {
   const jsonFile = await getFile(dataPath);
   const list = JSON.parse(base64ToUtf8(jsonFile.content));
 
-  const prefix = category === "gallery1" ? "g1" : "g2";
+  const prefix = "g" + category.slice(-1);
   let maxN = 0;
   for (const item of list) {
     const m = new RegExp(`^${prefix}-(\\d+)$`).exec(item.id || "");
@@ -480,7 +490,7 @@ async function uploadLog(token) {
   if (!title || !excerpt || !content) throw new Error("제목, 요약, 내용을 모두 입력해주세요.");
   if (locked && !password) throw new Error("잠그려면 비밀번호도 입력해주세요.");
 
-  const entry = { id: title, date, title, excerpt };
+  const entry = { id: title, date, title, excerpt, pair: logPairInput.value };
   if (locked) entry.locked = true;
   const postBody = locked ? await encryptPost(password, content) : content;
 
