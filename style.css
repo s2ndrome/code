@@ -109,6 +109,7 @@ img.dicon-glyph{width:32px;height:32px;object-fit:contain}
 /* ---- desktop stage (overlapping windows) ---- */
 .desktop{
   position:relative;
+  isolation:isolate; /* bringToFront keeps raising window z-index; keep it all below the taskbar */
   max-width:1180px;
   margin:26px auto 0;
   padding:0 24px 40px;
