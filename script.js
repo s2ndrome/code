@@ -24,10 +24,9 @@ const PAIRS = [
   { no: '03', title: 'DEMON × CHERRY', members: [] }
 ];
 
-/* 그림 방명록 저장 연결 자리.
-   window.submitGuestbook = async ({ name, message, image, createdAt }) => { ... }
-   처럼 함수를 만들어 두면 "방명록에 남기기"를 눌렀을 때 그 함수가 불려요.
-   (image는 PNG data URL 문자열) */
+/* 그림 방명록 저장 Worker 주소. workers/guestbook-worker.js 를 Cloudflare에 올린 뒤
+   그 주소(예: 'https://code-guestbook.내계정.workers.dev')를 넣어요. 비어 있으면 "아직 연결되지 않았어요"가 떠요. */
+const GUESTBOOK_URL = '';
 
 /* ---------------------------------------------------------
    1. 픽셀 아이콘 (SVG로 그려요)
@@ -493,6 +492,7 @@ function setAdmin(v){
   adminOut.hidden = !v;
   if (!v && !winById('adminWin').hidden) { closeWinAndNav('adminWin'); adminFrame.removeAttribute('src'); }
   syncPostEdit();
+  if (gbEntries) renderGuestbook(); // 방명록 삭제 버튼 보이기/숨기기
 }
 async function checkAdmin(){
   const t = readToken();
@@ -703,6 +703,7 @@ function onWinShown(id){
   if (id === 'trackWin') loadYouTube();
   if (id === 'uploadWin') startUpload();
   if (id === 'adminWin' && !adminFrame.getAttribute('src')) setAdminTool('upload');
+  if (id === 'paintWin' && gbEntries == null) loadGuestbook();
 }
 function onWinHidden(id){
   if (id === 'uploadWin') stopUpload();
@@ -972,29 +973,117 @@ mpEl.seek.addEventListener('click', e => {
   canvas.addEventListener('pointerup', end);
   canvas.addEventListener('pointercancel', end);
 
-  document.getElementById('paintForm').addEventListener('submit', async e => {
+  const BLANK = canvas.toDataURL('image/png');
+  const form = document.getElementById('paintForm');
+  const submitBtn = form.querySelector('button[type="submit"]');
+  form.addEventListener('submit', async e => {
     e.preventDefault();
+    if (submitBtn.disabled) return;
     const data = {
       name: document.getElementById('gbName').value.trim() || '익명',
       message: document.getElementById('gbMsg').value.trim(),
       image: canvas.toDataURL('image/png'),
+      website: document.getElementById('gbWebsite').value,
       createdAt: new Date().toISOString()
     };
+    if (data.image === BLANK) { note.textContent = '그림을 먼저 그려주세요'; return; }
     if (typeof window.submitGuestbook !== 'function') {
       note.textContent = '방명록 저장소가 아직 연결되지 않았어요';
       return;
     }
     note.textContent = '남기는 중…';
+    submitBtn.disabled = true;
     try {
-      await window.submitGuestbook(data);
-      note.textContent = '방명록에 남겼어요!';
+      const entry = await window.submitGuestbook(data);
+      note.textContent = '방명록에 남겼어요! (1~2분 뒤 모두에게 보여요)';
+      if (entry) addGuestbookEntry({ ...entry, localImage: data.image });
       document.getElementById('gbMsg').value = '';
       pushUndo(); blank();
     } catch (err) {
-      note.textContent = '남기지 못했어요. 잠시 후 다시 해주세요';
+      note.textContent = err && err.message ? err.message : '남기지 못했어요. 잠시 후 다시 해주세요';
+    } finally {
+      submitBtn.disabled = false;
     }
   });
 })();
+
+// Worker로 보내요 (workers/guestbook-worker.js)
+if (GUESTBOOK_URL) window.submitGuestbook = async data => {
+  const r = await fetch(GUESTBOOK_URL, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(data) });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok || !j.ok) throw new Error(j.error || '남기지 못했어요 (' + r.status + ')');
+  return j.entry;
+};
+
+/* ---- GUESTBOOK: 남긴 그림 목록 (data/guestbook.json). 관리자 브라우저에선 그림마다 삭제 버튼이 떠요 ---- */
+var gbEntries = null; // null = 아직 안 불러옴 (var: 관리자 확인이 이보다 먼저 돌아서)
+async function loadGuestbook(){
+  try { gbEntries = await fetchJSON('data/guestbook.json?t=' + Date.now()); } catch (e) { gbEntries = []; }
+  if (!Array.isArray(gbEntries)) gbEntries = [];
+  renderGuestbook();
+}
+function addGuestbookEntry(entry){
+  if (!gbEntries) gbEntries = [];
+  if (!gbEntries.some(x => x.id === entry.id)) gbEntries.unshift(entry);
+  renderGuestbook();
+}
+function renderGuestbook(){
+  const list = document.getElementById('gbList');
+  if (!list || !gbEntries) return;
+  document.getElementById('gbCount').textContent = gbEntries.length + ' drawing(s)';
+  list.innerHTML = '';
+  if (!gbEntries.length) { list.innerHTML = '<div class="gb-empty">아직 남긴 그림이 없어요. 첫 그림을 남겨주세요!</div>'; return; }
+  gbEntries.forEach(en => {
+    const card = document.createElement('figure');
+    card.className = 'gb-card';
+    card.innerHTML = '<img alt="" loading="lazy"><figcaption><b></b><span class="gb-msg"></span><time></time></figcaption>';
+    card.querySelector('img').src = en.localImage || en.image;
+    card.querySelector('img').alt = (en.name || '익명') + '님의 그림';
+    card.querySelector('b').textContent = en.name || '익명';
+    card.querySelector('.gb-msg').textContent = en.message || '';
+    card.querySelector('time').textContent = (en.createdAt || '').slice(0, 10).replace(/-/g, '.');
+    if (isAdmin) {
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'gb-del';
+      del.textContent = '삭제';
+      del.addEventListener('click', () => deleteGuestbookEntry(en, del));
+      card.appendChild(del);
+    }
+    list.appendChild(card);
+  });
+}
+async function deleteGuestbookEntry(en, btn){
+  if (!confirm('"' + (en.name || '익명') + '"님의 그림을 지울까요? 되돌릴 수 없어요.')) return;
+  const note = document.getElementById('paintNote');
+  const api = p => 'https://api.github.com/repos/s2ndrome/code/contents/' + p;
+  const H = { Authorization: 'Bearer ' + readToken(), Accept: 'application/vnd.github+json' };
+  const toB64 = s => { let b = ''; new TextEncoder().encode(s).forEach(x => b += String.fromCharCode(x)); return btoa(b); };
+  btn.disabled = true;
+  note.textContent = '지우는 중…';
+  try {
+    for (let attempt = 0; ; attempt++) { // 목록에서 빼기 (그 사이 누가 남겨서 거절되면 다시 읽어서)
+      const g = await fetch(api('data/guestbook.json') + '?ref=main', { headers: H, cache: 'no-store' });
+      if (!g.ok) throw new Error('목록을 못 불러왔어요 (' + g.status + ')');
+      const f = await g.json();
+      const list = JSON.parse(new TextDecoder().decode(base64ToBytes(f.content.replace(/\n/g, '')))).filter(x => x.id !== en.id);
+      const p = await fetch(api('data/guestbook.json'), { method: 'PUT', headers: H, body: JSON.stringify({ message: 'Remove guestbook entry ' + en.id, content: toB64(JSON.stringify(list, null, 2) + '\n'), sha: f.sha, branch: 'main' }) });
+      if (p.ok) break;
+      if (p.status !== 409 || attempt >= 2) throw new Error('목록 저장에 실패했어요 (' + p.status + ')');
+    }
+    const img = await fetch(api(en.image) + '?ref=main', { headers: H, cache: 'no-store' });
+    if (img.ok) {
+      const f = await img.json();
+      await fetch(api(en.image), { method: 'DELETE', headers: H, body: JSON.stringify({ message: 'Remove guestbook drawing ' + en.id, sha: f.sha, branch: 'main' }) });
+    }
+    gbEntries = gbEntries.filter(x => x.id !== en.id);
+    renderGuestbook();
+    note.textContent = '지웠어요 (1~2분 뒤 사이트에서도 사라져요)';
+  } catch (err) {
+    note.textContent = err.message;
+    btn.disabled = false;
+  }
+}
 
 /* ---------------------------------------------------------
    10. 업로드 진행창 (장식) — 가장 최근 로그 이름으로 돌아가요

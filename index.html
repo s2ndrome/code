@@ -138,8 +138,12 @@
       <form class="paint-form" id="paintForm" autocomplete="off">
         <label>이름 <input type="text" id="gbName" maxlength="20" placeholder="익명"></label>
         <label class="paint-msg">한마디 <input type="text" id="gbMsg" maxlength="80" placeholder="한마디 남기기"></label>
+        <!-- 스팸봇 함정: 사람 눈엔 안 보여요. 채워져 오면 저장 안 해요 -->
+        <input type="text" id="gbWebsite" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" class="gb-trap">
         <button type="submit" class="xp-btn xp-btn-default">방명록에 남기기</button>
       </form>
+      <div class="gb-head"><span>GUESTBOOK</span><span id="gbCount"></span></div>
+      <div class="gb-list" id="gbList"></div>
     </div>
     <div class="win-status"><span id="paintState">연필</span><span id="paintNote"></span></div>
   </section>
