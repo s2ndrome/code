@@ -16,10 +16,10 @@
 [data-act]:active{transform:scale(.95);opacity:.85}
 
 /* ===== 기기 + 글리터 케이스 ===== */
-#cg-phone{position:relative;width:100%;max-width:412px;height:min(800px,88vh);min-height:560px;border-radius:28px;--ir:28px;overflow:hidden;overflow:clip;background:#fff;isolation:isolate}
-@media (min-width:520px) and (min-height:720px){
-  #cg-phone{--ir:36px;width:412px;height:min(880px,94vh);border-radius:46px;border:10px solid transparent;
-    background:linear-gradient(#fff,#fff) padding-box,linear-gradient(135deg,#bff3ec,#9fd6f6 35%,#e6f7ff 50%,#8fe3d6 70%,#c7e9ff) border-box;
+#cg-phone{position:relative;container-type:inline-size;width:min(86vw,330px);height:min(calc(min(86vw,330px) * 1.9),78vh);min-height:470px;border-radius:30px;--ir:30px;overflow:hidden;overflow:clip;background:#fff;isolation:isolate}
+@media (min-width:520px){
+  #cg-phone{--ir:32px;width:350px;height:min(700px,88vh);border-radius:42px;border:10px solid transparent;
+    background:linear-gradient(135deg,#bff3ec,#9fd6f6 35%,#e6f7ff 50%,#8fe3d6 70%,#c7e9ff) border-box;
     box-shadow:0 0 0 2px rgba(255,255,255,.8),0 30px 70px rgba(80,150,170,.35)}
     background:radial-gradient(2px 2px at 20% 30%,#fff,transparent),radial-gradient(2px 2px at 70% 20%,#fff,transparent),radial-gradient(1.5px 1.5px at 40% 80%,#fff,transparent),radial-gradient(2px 2px at 85% 65%,#fff,transparent),radial-gradient(1.5px 1.5px at 12% 70%,#fff,transparent);
     animation:twinkle 2.4s ease-in-out infinite alternate}
@@ -32,6 +32,9 @@
   background:radial-gradient(40px 30px at 70% 62%,rgba(255,220,200,.10),transparent 70%),radial-gradient(30px 24px at 30% 78%,rgba(255,255,255,.12),transparent 70%),radial-gradient(26px 20px at 60% 35%,rgba(255,210,220,.08),transparent 70%)}
 
 .glass{position:absolute;inset:0;overflow:hidden;border-radius:var(--ir,0px);clip-path:inset(0 round var(--ir,0px));-webkit-clip-path:inset(0 round var(--ir,0px));isolation:isolate;transform:translateZ(0)}
+.screen,#cg-lock,.backdrop,#cg-smudge{border-radius:var(--ir,0px)}
+#cg-home .wall,#cg-home .wall:before,#cg-home .wall:after{border-radius:var(--ir,0px)}
+#cg-navbar{border-radius:0 0 var(--ir,0px) var(--ir,0px)}
 
 /* ===== 상태 표시줄 ===== */
 #cg-statusbar{position:absolute;top:0;left:0;right:0;height:var(--sb);z-index:90;display:flex;align-items:center;justify-content:space-between;padding:0 18px 0 24px;font-size:13px;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.35)}
@@ -47,7 +50,7 @@
 .punch{position:absolute;top:12px;left:50%;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:#111;z-index:91;pointer-events:none}
 
 /* ===== 네비게이션 바 ===== */
-#cg-navbar{position:absolute;left:0;right:0;bottom:0;height:var(--nb);z-index:70;border-radius:0 0 var(--ir,0px) var(--ir,0px);display:flex;justify-content:space-around;align-items:center;background:rgba(255,255,255,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid rgba(160,210,220,.35)}
+#cg-navbar{position:absolute;left:0;right:0;bottom:0;height:var(--nb);z-index:70;display:flex;justify-content:space-around;align-items:center;background:rgba(255,255,255,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid rgba(160,210,220,.35)}
 #cg-navbar button{width:64px;height:48px;display:flex;align-items:center;justify-content:center;border-radius:14px;color:#5d7380}
 #cg-navbar button:active{background:rgba(111,214,203,.18)}
 #cg-navbar svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -106,9 +109,9 @@
   background:radial-gradient(60% 40% at 30% 62%,rgba(255,255,255,.65),transparent 70%),radial-gradient(50% 35% at 75% 70%,rgba(255,200,220,.55),transparent 70%),linear-gradient(170deg,#c9e9f2,#f3e6ee 55%,#fde8d8)}
 #cg-lock.hidden{opacity:0;visibility:hidden;pointer-events:none;transition:opacity .35s ease,visibility 0s linear .35s}
 #cg-lock .lk-clock{margin-top:calc(var(--sb) + 34px);text-align:center;color:#fff;text-shadow:0 2px 12px rgba(40,90,110,.55);pointer-events:none}
-#cg-lock .lk-clock b{display:block;font-size:clamp(58px,19vw,80px);font-weight:300;letter-spacing:-2px;line-height:1}
+#cg-lock .lk-clock b{display:block;font-size:clamp(58px,19cqw,80px);font-weight:300;letter-spacing:-2px;line-height:1}
 #cg-lock .lk-clock span{font-size:14px;font-weight:600}
-.sleep{position:relative;margin-top:22px;width:250px;max-width:70vw;height:170px;pointer-events:none}
+.sleep{position:relative;margin-top:22px;width:250px;max-width:70cqw;height:170px;pointer-events:none}
 .sleep .doll{position:absolute;font-size:46px;filter:drop-shadow(0 4px 6px rgba(0,0,0,.12))}
 .sleep .face{position:absolute;left:50%;top:44%;width:84px;height:84px;margin-left:-42px;border-radius:50%;background:radial-gradient(circle at 50% 40%,#ffe9dc,#f6cdb9);box-shadow:0 0 0 10px rgba(143,227,214,.55)}
 .sleep .face:before,.sleep .face:after{content:"";position:absolute;top:40%;width:16px;height:6px;border-bottom:2.5px solid #6b4b45;border-radius:0 0 10px 10px}
@@ -116,7 +119,7 @@
 .sleep .drool{position:absolute;left:54%;top:84%;width:6px;height:12px;border-radius:0 0 6px 6px;background:rgba(150,220,255,.9)}
 .sleep .zz{position:absolute;right:16%;top:6%;font-size:20px;color:#fff;font-weight:800;animation:zz 2s ease-in-out infinite}
 @keyframes zz{0%,100%{transform:translateY(0);opacity:.5}50%{transform:translateY(-8px);opacity:1}}
-.coupon{position:relative;margin-top:18px;padding:12px 18px 10px;border-radius:16px;border:2px dashed #ff9ec3;background:rgba(255,255,255,.7);font-family:var(--hand);font-size:23px;line-height:1.2;color:#e0558d;text-align:center;transform:rotate(-3deg);max-width:86%}
+.coupon{position:relative;margin-top:18px;padding:12px 18px 10px;border-radius:16px;border:2px dashed #ff9ec3;background:rgba(255,255,255,.7);font-family:var(--hand);font-size:clamp(15px,6cqw,23px);white-space:nowrap;line-height:1.2;color:#e0558d;text-align:center;transform:rotate(-3deg);max-width:86%}
 .coupon small{display:block;font-size:17px;color:#7a8a99}
 .coupon:active{transform:rotate(-3deg) scale(.95)}
 .lk-hint{margin-top:auto;margin-bottom:24px;display:flex;flex-direction:column;align-items:center;gap:6px;color:#4f7584;font-size:12.5px;font-weight:700}
@@ -131,15 +134,15 @@
 #cg-home .tear{position:absolute;pointer-events:none;width:5px;height:10px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:rgba(255,255,255,.8);z-index:0}
 .home-in{position:relative;z-index:1;flex:1;min-height:0;overflow-y:auto;padding:16px 14px 6px;display:flex;flex-direction:column}
 .home-top{display:flex;justify-content:space-between;align-items:flex-end;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.4);padding:4px 6px 14px;width:100%;text-align:left}
-.home-top b{font-size:clamp(34px,11vw,44px);font-weight:300;line-height:1}
+.home-top b{font-size:clamp(34px,11cqw,44px);font-weight:300;line-height:1}
 .home-top span{font-size:12.5px;text-align:right;line-height:1.5}
 .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px 4px;align-content:start}
 .app{display:flex;flex-direction:column;align-items:center;gap:6px;min-height:84px;padding-top:2px;position:relative}
 .app .lbl{font-size:11px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.65);max-width:100%;padding:0 2px;text-align:center;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .app.tilt1{transform:rotate(-4deg)}.app.tilt2{transform:rotate(3deg)}
 .app.big .ic{box-shadow:0 0 0 3px rgba(255,255,255,.8),0 6px 14px rgba(0,0,0,.25)}
-.ic{position:relative;width:56px;height:56px;border-radius:19px;display:flex;align-items:center;justify-content:center;background:var(--c,#fff);color:var(--fc,#2b3440);font-weight:800;font-size:16px;letter-spacing:-.5px;box-shadow:0 4px 10px rgba(0,0,0,.18);overflow:hidden}
-.ic:after{content:"";position:absolute;inset:0;background:linear-gradient(160deg,rgba(255,255,255,.45),rgba(255,255,255,0) 45%);pointer-events:none}
+.ic{position:relative;width:56px;height:56px;border-radius:19px;display:flex;align-items:center;justify-content:center;background:var(--c,#fff);color:var(--fc,#2b3440);font-weight:800;font-size:16px;letter-spacing:-.5px;box-shadow:0 4px 10px rgba(0,0,0,.18)}
+.ic:after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(160deg,rgba(255,255,255,.45),rgba(255,255,255,0) 45%);pointer-events:none}
 .ic .em{font-size:27px;line-height:1}
 .ic .badge{position:absolute;top:-4px;right:-5px;z-index:2;box-shadow:0 0 0 2px #fff}
 .dock{position:relative;z-index:1;margin:4px 12px 10px;padding:10px 8px;border-radius:30px;background:rgba(255,255,255,.35);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);display:grid;grid-template-columns:repeat(4,1fr);justify-items:center;border:1px solid rgba(255,255,255,.5)}
@@ -147,7 +150,7 @@
 .dock .lbl{display:none}
 
 /* ===== 알림 패널 ===== */
-.backdrop{position:absolute;inset:0;border-radius:var(--ir,0px);background:rgba(40,70,80,.35);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.backdrop{position:absolute;inset:0;background:rgba(40,70,80,.35);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
 .backdrop:active{transform:none!important;opacity:1!important}
 .panel-box{position:relative;margin:0 10px;padding:16px;border-radius:0 0 30px 30px;background:rgba(255,255,255,.97);border:1px solid var(--line);border-top:0;max-height:calc(100% - 16px);overflow-y:auto}
 .qs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
@@ -262,11 +265,22 @@
 .viewfinder .flash.go{animation:flash .35s ease}
 @keyframes flash{0%{opacity:.95}100%{opacity:0}}
 .shutter{width:72px;height:72px;border-radius:50%;background:#fff;box-shadow:0 0 0 5px #bfeae4;margin:6px auto 12px;display:block}
-@media (max-width:350px){
+@container (max-width:345px){
   .ic{width:50px;height:50px;border-radius:16px}
   .grid{gap:10px 2px}
   .row{padding:9px 12px}
   .tog .ti{width:46px;height:46px}
+  #cg-statusbar{padding:0 14px 0 18px}
+  #cg-statusbar .sb-ic{gap:4px}
+  #cg-lock .lk-clock{margin-top:calc(var(--sb) + 18px)}
+  .sleep{transform:scale(.82);margin-top:4px;margin-bottom:-26px}
+}
+@container (max-width:300px){
+  #cg-statusbar{padding:0 10px 0 14px;font-size:12px}
+  #cg-statusbar .opt{display:none}
+  #cg-statusbar svg{width:13px;height:13px}
+  .sleep{transform:scale(.7);margin-top:-6px;margin-bottom:-30px}
+  .coupon{padding:10px 12px 8px}
 }
 </style>
 <div id="cg-phone"><div class="glass">
@@ -275,7 +289,7 @@
     <div class="sb-ic">
       <span class="nbadge" id="cg-sbNoti">●●●</span>
       <svg viewBox="0 0 24 24"><path d="M12 18.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zM5 13a10 10 0 0 1 14 0l-1.8 1.8a7.5 7.5 0 0 0-10.4 0zM1.5 9.5a15 15 0 0 1 21 0l-1.8 1.8a12.5 12.5 0 0 0-17.4 0z"/></svg>
-      <span style="font-size:11px">5G</span>
+      <span class="opt" style="font-size:11px">5G</span>
       <svg viewBox="0 0 24 24"><path d="M3 20h3v-4H3zM8.5 20h3v-8h-3zM14 20h3V8h-3zM19.5 20h3V4h-3z"/></svg>
       <span class="bat"><span id="cg-batPct">14</span>%<span class="batbox"><i id="cg-batFill" style="width:3px"></i></span></span>
     </div>
@@ -465,7 +479,7 @@
     <button data-act="back" aria-label="뒤로 가기" type="button"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
   </nav>
 
-  <svg id="cg-crack" viewBox="0 0 120 110" aria-hidden="true"><g fill="none" stroke="rgba(255,255,255,.95)" stroke-width="1.1" stroke-linecap="round"><path d="M2 3 L26 22 L38 20 L58 41 L64 62"/><path d="M26 22 L22 44 L30 60"/><path d="M38 20 L60 14 L84 18"/><path d="M58 41 L80 46 L96 62"/><path d="M2 3 L8 30 L4 52"/></g><g fill="none" stroke="rgba(80,110,120,.35)" stroke-width=".6"><path d="M3 4 L27 23 L39 21 L59 42 L65 63"/><path d="M39 21 L61 15 L85 19"/></g></svg>
+  <svg id="cg-crack" viewBox="0 0 120 110" aria-hidden="true"><g transform="translate(13 13)" fill="none" stroke="rgba(255,255,255,.95)" stroke-width="1.1" stroke-linecap="round"><path d="M2 3 L26 22 L38 20 L58 41 L64 62"/><path d="M26 22 L22 44 L30 60"/><path d="M38 20 L60 14 L84 18"/><path d="M58 41 L80 46 L96 62"/><path d="M2 3 L8 30 L4 52"/></g><g transform="translate(13 13)" fill="none" stroke="rgba(80,110,120,.35)" stroke-width=".6"><path d="M3 4 L27 23 L39 21 L59 42 L65 63"/><path d="M39 21 L61 15 L85 19"/></g></svg>
   <div id="cg-smudge"></div>
   <div id="cg-toasts"></div>
 </div></div>
@@ -474,7 +488,7 @@
 (function(){
 "use strict";
 
-function $$(s, r){ return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
+function $$(s, r){ return Array.prototype.slice.call((r || document.getElementById("cg-phone") || document).querySelectorAll(s)); }
 function esc(s){ return String(s == null ? "" : s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
 function setHTML(id, h){ var el = document.getElementById(id); if (el) el.innerHTML = h; return el; }
 function setText(id, t){ var el = document.getElementById(id); if (el) el.textContent = t; }
