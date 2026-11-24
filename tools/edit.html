@@ -75,6 +75,17 @@
   .status.error { color: #d32f2f; }
   .status.done { color: #1a8a3e; font-weight: 600; }
   hr { border: none; border-top: 1px solid #e3f2fb; margin: 26px 0; }
+  .block-tools { display: flex; gap: 8px; margin: 8px 0; }
+  .block-tools button { margin: 0; padding: 6px 12px; border: 1px solid #cfeaf9; border-radius: 6px; background: #f7fbff; color: #146485; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .block-tools button:hover { background: #e3f2fb; }
+  .block-modal { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(20,57,74,.35); }
+  .block-modal[hidden] { display: none; }
+  .block-box { width: min(600px, 100%); max-height: 90vh; overflow: auto; padding: 20px; border-radius: 12px; background: #fff; box-shadow: 0 16px 48px rgba(0,0,0,.2); }
+  .block-box h3 { margin: 0 0 10px; font-size: 15px; }
+  .block-box textarea { min-height: 220px; font-family: ui-monospace, monospace; font-size: 12.5px; }
+  .block-modal-label { margin: 12px 0 4px; font-size: 11px; font-weight: 600; color: #5b7c8d; }
+  .block-modal-preview { max-height: 200px; overflow: auto; padding: 10px 12px; border: 1px solid #cfeaf9; border-radius: 8px; font-size: 13px; line-height: 1.7; background: #f7fbff; }
+  .block-box .btn-row { margin-top: 14px; }
 </style>
 </head>
 <body>
@@ -133,6 +144,10 @@
     <input type="file" id="photo-file" accept="image/*">
 
     <label for="photo-raw">본문 HTML (그대로 저장됨)</label>
+    <div class="block-tools" data-target="photo-raw">
+      <button type="button" data-block="html">+ HTML 블록</button>
+      <button type="button" data-block="md">+ 마크다운 블록</button>
+    </div>
     <textarea id="photo-raw" class="raw"></textarea>
   </div>
 
@@ -152,6 +167,10 @@
     </div>
 
     <label for="log-content">내용</label>
+    <div class="block-tools" data-target="log-content">
+      <button type="button" data-block="html">+ HTML 블록</button>
+      <button type="button" data-block="md">+ 마크다운 블록</button>
+    </div>
     <textarea id="log-content"></textarea>
 
     <div class="checkbox-row">
@@ -171,6 +190,19 @@
 
   <p class="status" id="status"></p>
 </main>
+
+<div class="block-modal" id="block-modal" hidden>
+  <div class="block-box">
+    <h3 id="block-modal-title">HTML 블록</h3>
+    <textarea id="block-modal-input" placeholder=""></textarea>
+    <div class="block-modal-label">미리보기</div>
+    <div class="block-modal-preview" id="block-modal-preview"></div>
+    <div class="btn-row">
+      <button type="button" id="block-modal-cancel" class="secondary">취소</button>
+      <button type="button" id="block-modal-ok">넣기</button>
+    </div>
+  </div>
+</div>
 
 <script>
 const OWNER = "s2ndrome";
@@ -225,6 +257,90 @@ function setStatus(text, kind) {
 function escapeHtml(str) {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
+
+/* ===== HTML 블록 · 마크다운 블록 ===== */
+const MD_LIB = "https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js";
+let markedPromise = null;
+function loadMarked() {
+  if (window.marked) return Promise.resolve();
+  if (!markedPromise) {
+    markedPromise = new Promise((resolve, reject) => {
+      const s = document.createElement("script");
+      s.src = MD_LIB;
+      s.onload = resolve;
+      s.onerror = () => reject(new Error("마크다운 변환 도구를 불러오지 못했어요."));
+      document.head.appendChild(s);
+    });
+  }
+  return markedPromise;
+}
+function escAttr(s) {
+  return s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+function md2html(src) {
+  const h = window.marked.parse(src || "", { gfm: true, breaks: true });
+  return h.split(/(<pre[\s\S]*?<\/pre>)/).map((p, i) => i % 2 ? p : p.replace(/>\s*\n\s*</g, "><").replace(/\n/g, " ")).join("").trim();
+}
+function insertAtCursor(ta, text) {
+  const start = ta.selectionStart ?? ta.value.length;
+  const end = ta.selectionEnd ?? ta.value.length;
+  ta.value = ta.value.slice(0, start) + text + ta.value.slice(end);
+  const pos = start + text.length;
+  ta.focus();
+  ta.setSelectionRange(pos, pos);
+}
+
+const blockModal = document.getElementById("block-modal");
+const blockModalTitle = document.getElementById("block-modal-title");
+const blockModalInput = document.getElementById("block-modal-input");
+const blockModalPreview = document.getElementById("block-modal-preview");
+let blockMode = "html";
+let blockTarget = null;
+
+function updateBlockPreview() {
+  const v = blockModalInput.value;
+  if (!v.trim()) { blockModalPreview.innerHTML = '<span style="color:#9bb6c4">미리보기가 여기 보여요</span>'; return; }
+  blockModalPreview.innerHTML = blockMode === "md" ? md2html(v) : v.replace(/<script[\s\S]*?<\/script>/gi, "");
+}
+blockModalInput.addEventListener("input", updateBlockPreview);
+
+function openBlockModal(type, target) {
+  blockMode = type;
+  blockTarget = target;
+  blockModalTitle.textContent = type === "md" ? "마크다운 블록" : "HTML 블록";
+  blockModalInput.placeholder = type === "md"
+    ? "# 제목\n\n**굵게**, *기울임*, > 인용, - 목록, [링크](https://...)"
+    : "<div style=\"...\">HTML 코드를 그대로 넣어요</div>";
+  blockModalInput.value = "";
+  blockModalPreview.innerHTML = "";
+  blockModal.hidden = false;
+  blockModalInput.focus();
+  if (type === "md") loadMarked().then(updateBlockPreview).catch(err => { blockModalPreview.textContent = err.message; });
+}
+function closeBlockModal() { blockModal.hidden = true; blockTarget = null; }
+
+document.getElementById("block-modal-ok").addEventListener("click", async () => {
+  const v = blockModalInput.value;
+  if (!v.trim() || !blockTarget) { closeBlockModal(); return; }
+  let block;
+  if (blockMode === "md") {
+    try { await loadMarked(); } catch (err) { alert(err.message); return; }
+    block = '<div class="mdb" data-md="' + escAttr(v) + '">' + md2html(v) + "</div>";
+  } else {
+    block = '<div class="hb">' + v + "</div>";
+  }
+  insertAtCursor(blockTarget, block + "\n");
+  closeBlockModal();
+});
+document.getElementById("block-modal-cancel").addEventListener("click", closeBlockModal);
+blockModal.addEventListener("click", e => { if (e.target === blockModal) closeBlockModal(); });
+
+document.querySelectorAll(".block-tools").forEach(tool => {
+  const target = document.getElementById(tool.dataset.target);
+  tool.querySelectorAll("[data-block]").forEach(btn => {
+    btn.addEventListener("click", () => openBlockModal(btn.dataset.block, target));
+  });
+});
 
 function utf8ToBase64(str) {
   const bytes = new TextEncoder().encode(str);
