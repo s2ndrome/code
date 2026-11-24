@@ -1,6 +1,6 @@
 <div id="dh-wrap">
 <style>
- #dh-wrap{
+#dh-wrap{
   --bg:#0d0e10; --bg2:#141518; --card:#1b1c20; --line:#2a2b30;
   --text:#ececee; --sub:#8c8e95; --dim:#5d5f66;
   --ti:#b8bbc2; --mint:#8fe3d6; --mint2:#5fc9b9; --red:#ff4d4f;
@@ -17,11 +17,13 @@
 :where(#dh-wrap) input{font:inherit;color:inherit}
 
 /* ===== 기기 프레임 ===== */
-#dh-phone{position:relative;width:100%;max-width:412px;height:min(800px,88vh);min-height:560px;overflow:hidden;overflow:clip;background:#000;isolation:isolate;border-radius:28px}
-@media (min-width:520px){
-  #dh-phone{height:min(840px,92vh);border-radius:46px;border:9px solid #1f2023;
+#dh-phone{position:relative;width:100%;max-width:412px;height:min(800px,88vh);min-height:560px;border-radius:28px;--ir:28px;overflow:hidden;overflow:clip;background:#000;isolation:isolate}
+@media (min-width:520px) and (min-height:720px){
+  #dh-phone{--ir:37px;width:412px;height:min(880px,94vh);border-radius:46px;border:9px solid #1f2023;
     box-shadow:0 0 0 2px #4a4c52,0 0 0 3px #111,0 40px 80px rgba(0,0,0,.6)}
 }
+
+.glass{position:absolute;inset:0;overflow:hidden;border-radius:var(--ir,0px);clip-path:inset(0 round var(--ir,0px));-webkit-clip-path:inset(0 round var(--ir,0px));isolation:isolate;transform:translateZ(0)}
 
 /* ===== 상태 표시줄 ===== */
 #dh-statusbar{position:absolute;top:0;left:0;right:0;height:var(--sb);z-index:90;display:flex;align-items:center;justify-content:space-between;padding:0 18px 0 22px;font-size:13px;font-weight:600;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.35)}
@@ -293,7 +295,7 @@
   .qs{gap:6px}.tog .ti{width:46px;height:46px}
 }
 </style>
-<div id="dh-phone">
+<div id="dh-phone"><div class="glass">
   <!-- 상태 표시줄 (전체 탭 시 빠른 설정 패널) -->
   <div id="dh-statusbar" data-act="panel" role="button" aria-label="빠른 설정 열기">
     <span id="dh-sbClock">--:--</span>
@@ -546,7 +548,7 @@
   </nav>
 
   <div id="dh-toasts"></div>
-</div>
+</div></div>
 
 <script>
 (function(){
