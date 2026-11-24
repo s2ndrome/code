@@ -1,3 +1,23 @@
+/* ---- address routing: each window/post gets its own URL, e.g. /log/3 ----
+   주소창(과 위의 브라우저 바)이 지금 연 창·글에 맞춰 바뀌고, 그 주소로 바로 들어오면 그 창·글이 열려요.
+   글 번호는 오래된 글부터 1번. 404.html이 GitHub Pages에서 없는 주소를 다시 홈으로 돌려줘요. */
+const PATH_OF = { profileWin: 'identity', menuWin: 'menu', galleryWin: 'archive', chatWin: 'record', logWin: 'log', pairWin: 'pair', bgmWidget: 'track' };
+const WIN_OF = Object.fromEntries(Object.entries(PATH_OF).map(([k, v]) => [v, k]));
+const BASE_URL = 'https://dongha-loves-cloud.kr';
+const browserUrl = document.getElementById('browserUrl');
+function updateUrlBar(){
+  const p = location.pathname;
+  if (browserUrl) browserUrl.textContent = BASE_URL + (p && p !== '/' ? p : '');
+}
+let routing = false;
+function nav(path){
+  if (routing || location.pathname === path) return;
+  try { history.pushState(null, '', path); } catch (e) {}
+  updateUrlBar();
+}
+function numOf(list, id){ const i = list.findIndex(x => x.id === id); return i < 0 ? '' : list.length - i; }
+function idOf(list, n){ n = parseInt(n, 10); if (!(n > 0) || n > list.length) return null; return list[list.length - n].id; }
+
 /* ---- window manager: bring-to-front / close / reopen / drag ---- */
 let zTop = 10;
 function bringToFront(el){ zTop += 1; el.style.zIndex = zTop; }
@@ -39,15 +59,22 @@ function closeWin(id){
   const el = document.getElementById(id);
   if (el) el.hidden = true;
 }
+function closeWinAndNav(target){
+  closeWin(target);
+  if (target === 'postWin') { nav(postParentPath); return; }
+  const seg = location.pathname.split('/').filter(Boolean);
+  if (WIN_OF[seg[0]] === target) nav('/');
+}
 document.querySelectorAll('.win-close').forEach(btn => {
   const target = btn.dataset.target;
-  btn.addEventListener('click', () => closeWin(target));
-  btn.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); closeWin(target); } });
+  btn.addEventListener('click', () => closeWinAndNav(target));
+  btn.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); closeWinAndNav(target); } });
 });
 document.querySelectorAll('[data-open-target]').forEach(el => {
   const target = el.dataset.openTarget;
-  el.addEventListener('click', () => openWin(target));
-  el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openWin(target); } });
+  const openAndNav = () => { openWin(target); nav('/' + (PATH_OF[target] || target)); };
+  el.addEventListener('click', openAndNav);
+  el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openAndNav(); } });
 });
 document.querySelectorAll('.win').forEach(w => {
   w.addEventListener('mousedown', () => bringToFront(w));
@@ -191,7 +218,9 @@ function runScripts(container){
   });
 }
 
-async function openPost(catPath, meta, title){
+let postParentPath = '/';
+async function openPost(catPath, meta, title, path){
+  if (path) { postParentPath = path.replace(/\/[^/]+$/, '') || '/'; nav(path); }
   postMeta.textContent = meta;
   postContent.innerHTML = '불러오는 중…';
   openWin('postWin');
@@ -213,18 +242,19 @@ async function openPost(catPath, meta, title){
 }
 
 function openGalleryPost(cat, item){
-  openPost('gallery' + cat, galleryEmoji(cat), item.id);
+  openPost('gallery' + cat, galleryEmoji(cat), item.id, '/archive/' + cat + '/' + numOf(galleryList(cat), item.id));
 }
 function openLogPost(item){
-  openPost('log', 'LOG · ' + item.date, item.id);
+  openPost('log', 'LOG · ' + item.date, item.id, '/log/' + numOf(logItems, item.id));
 }
 
-document.getElementById('postBack').addEventListener('click', () => closeWin('postWin'));
+document.getElementById('postBack').addEventListener('click', () => { closeWin('postWin'); nav(postParentPath); });
 
 /* ---- pair ---- */
 document.querySelectorAll('.pair-card').forEach(card => {
   const id = card.dataset.pairId;
-  const open = () => openPost('pair', 'PAIR', id);
+  const n = id === 'character-1' ? 1 : 2;
+  const open = () => openPost('pair', 'PAIR', id, '/pair/' + n);
   card.addEventListener('click', open);
   card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
 });
@@ -265,7 +295,7 @@ function renderGallery(cat){
 }
 
 document.querySelectorAll('.tab').forEach(btn => {
-  btn.addEventListener('click', () => renderGallery(Number(btn.dataset.cat)));
+  btn.addEventListener('click', () => { renderGallery(Number(btn.dataset.cat)); nav('/archive/' + btn.dataset.cat); });
 });
 document.getElementById('galPrev').addEventListener('click', () => {
   if (galPage[activeCat] > 1) { galPage[activeCat]--; renderGallery(activeCat); }
@@ -299,6 +329,34 @@ function renderLog(){
   });
 }
 
+/* ---- address routing (continued): read /category/번호 from the URL ---- */
+function route(){
+  const seg = location.pathname.split('/').filter(Boolean).map(s => { try { return decodeURIComponent(s); } catch (e) { return s; } });
+  const winId = WIN_OF[seg[0]];
+  if (!winId) { updateUrlBar(); return; }
+  routing = true;
+  try {
+    openWin(winId);
+    if (winId === 'galleryWin') {
+      const cat = /^[12]$/.test(seg[1]) ? Number(seg[1]) : 1;
+      renderGallery(cat);
+      if (seg[2]) {
+        const id = idOf(galleryList(cat), seg[2]);
+        const item = id && galleryList(cat).find(x => x.id === id);
+        if (item) openPost('gallery' + cat, galleryEmoji(cat), item.id, '/archive/' + cat + '/' + seg[2]);
+      }
+    } else if (winId === 'logWin' && seg[1]) {
+      const id = idOf(logItems, seg[1]);
+      const item = id && logItems.find(x => x.id === id);
+      if (item) openLogPost(item);
+    } else if (winId === 'pairWin' && seg[1]) {
+      const id = seg[1] === '1' ? 'character-1' : seg[1] === '2' ? 'character-2' : null;
+      if (id) openPost('pair', 'PAIR', id, '/pair/' + seg[1]);
+    }
+  } finally { routing = false; updateUrlBar(); }
+}
+addEventListener('popstate', route);
+
 /* ---- initial load ---- */
 (async function loadContent(){
   try {
@@ -312,6 +370,7 @@ function renderLog(){
   }
   renderGallery(1);
   renderLog();
+  route(); // 주소로 바로 들어온 경우 그 창·글 열기
 })();
 
 /* ---- bgm player ---- */

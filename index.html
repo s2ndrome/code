@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>/* 404.html이 넘겨준 주소(/log/3 같은)를 주소창에 되돌려 놓아요 */(function(){try{var p=new URLSearchParams(location.search).get("p");if(p&&p.charAt(0)==="/")history.replaceState(null,"",p+location.hash);}catch(e){}})();</script>
 <title>CODE Desktop</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Galmuri11&family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
@@ -19,7 +20,7 @@
 <div class="browser-bar">
   <div class="browser-chrome">
     <span class="browser-dots"><span></span><span></span><span></span></span>
-    <span class="browser-url">https://dongha-loves-cloud.kr</span>
+    <span class="browser-url" id="browserUrl">https://dongha-loves-cloud.kr</span>
   </div>
 </div>
 

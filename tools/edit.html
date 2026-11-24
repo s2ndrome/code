@@ -147,6 +147,7 @@
     <div class="block-tools" data-target="photo-raw">
       <button type="button" data-block="html">+ HTML 블록</button>
       <button type="button" data-block="md">+ 마크다운 블록</button>
+      <button type="button" data-preview>미리보기</button>
     </div>
     <textarea id="photo-raw" class="raw"></textarea>
   </div>
@@ -170,6 +171,7 @@
     <div class="block-tools" data-target="log-content">
       <button type="button" data-block="html">+ HTML 블록</button>
       <button type="button" data-block="md">+ 마크다운 블록</button>
+      <button type="button" data-preview>미리보기</button>
     </div>
     <textarea id="log-content"></textarea>
 
@@ -200,6 +202,17 @@
     <div class="btn-row">
       <button type="button" id="block-modal-cancel" class="secondary">취소</button>
       <button type="button" id="block-modal-ok">넣기</button>
+    </div>
+  </div>
+</div>
+
+<div class="block-modal" id="preview-modal" hidden>
+  <div class="block-box">
+    <h3>미리보기</h3>
+    <p style="margin:0 0 10px;font-size:11.5px;color:#5b7c8d">여기서는 스크립트가 실행되지 않아요 (실제 사이트에 올리면 실행돼요)</p>
+    <div class="block-modal-preview" id="preview-body" style="max-height:60vh"></div>
+    <div class="btn-row">
+      <button type="button" id="preview-close" class="secondary">닫기</button>
     </div>
   </div>
 </div>
@@ -340,7 +353,19 @@ document.querySelectorAll(".block-tools").forEach(tool => {
   tool.querySelectorAll("[data-block]").forEach(btn => {
     btn.addEventListener("click", () => openBlockModal(btn.dataset.block, target));
   });
+  const previewBtn = tool.querySelector("[data-preview]");
+  if (previewBtn) previewBtn.addEventListener("click", () => openPreview(target));
 });
+
+const previewModal = document.getElementById("preview-modal");
+const previewBody = document.getElementById("preview-body");
+function openPreview(target) {
+  const v = target.value;
+  previewBody.innerHTML = v.trim() ? v.replace(/<script[\s\S]*?<\/script>/gi, "") : '<span style="color:#9bb6c4">내용이 없어요</span>';
+  previewModal.hidden = false;
+}
+document.getElementById("preview-close").addEventListener("click", () => { previewModal.hidden = true; });
+previewModal.addEventListener("click", e => { if (e.target === previewModal) previewModal.hidden = true; });
 
 function utf8ToBase64(str) {
   const bytes = new TextEncoder().encode(str);
