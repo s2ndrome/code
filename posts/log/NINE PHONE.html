@@ -9,7 +9,7 @@
   --bubMe:#0a84ff; --bubMeText:#fff; --bubThem:#26252a; --bubThemText:#fff; --sysbg:#1c1c1e; --photobg:#000; --icr:14px;
 }
 :where(#nn-wrap) *,:where(#nn-wrap) *::before,:where(#nn-wrap) *::after{box-sizing:border-box;margin:0;padding:0}
-#nn-wrap{display:flex;justify-content:center;padding:12px 0;color:var(--text);font-family:var(--font);-webkit-font-smoothing:antialiased;line-height:normal;text-align:left}
+#nn-wrap{display:flex;justify-content:center;padding:8px 0;color:var(--text);font-family:var(--font);-webkit-font-smoothing:antialiased;line-height:normal;text-align:left}
 :where(#nn-wrap) button{font:inherit;color:inherit;background:none;border:0;margin:0}
 :where(#nn-wrap) input{font:inherit;color:inherit}
 .tap,[data-act]{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
@@ -17,9 +17,9 @@
 [data-act]:active{transform:scale(.96);opacity:.82}
 
 /* ===== 기기 프레임 ===== */
-#nn-phone{position:relative;container-type:inline-size;width:min(86vw,330px);height:min(calc(min(86vw,330px) * 1.9),78vh);min-height:470px;border-radius:30px;--ir:30px;overflow:hidden;overflow:clip;background:var(--frame);isolation:isolate}
+#nn-phone{position:relative;container-type:inline-size;width:min(100%,82vw,300px);height:auto;aspect-ratio:10/19;max-height:min(74svh,580px);min-height:430px;border-radius:28px;--ir:28px;overflow:hidden;overflow:clip;background:var(--frame);isolation:isolate}
 @media (min-width:520px){
-  #nn-phone{--ir:33px;width:350px;height:min(700px,88vh);border-radius:42px;border:9px solid var(--frame);background:var(--frame);
+  #nn-phone{--ir:31px;width:320px;height:min(620px,86vh);aspect-ratio:auto;max-height:none;border-radius:40px;border:9px solid var(--frame);background:var(--frame);
     box-shadow:0 0 0 2px #3a3a3c,0 30px 70px rgba(0,0,0,.55)}
 }
 .glass{position:absolute;inset:0;overflow:hidden;border-radius:var(--ir,0px);clip-path:inset(0 round var(--ir,0px));-webkit-clip-path:inset(0 round var(--ir,0px));isolation:isolate;transform:translateZ(0)}
